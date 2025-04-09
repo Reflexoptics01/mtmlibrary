@@ -18,7 +18,14 @@ interface RisalaItem {
   downloadCount: number;
 }
 
-export default function RisalaDetail({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: Record<string, string | string[] | undefined>;
+}
+
+export default function RisalaDetail({ params }: PageProps) {
   const [risala, setRisala] = useState<RisalaItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
