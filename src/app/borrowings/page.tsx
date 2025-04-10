@@ -27,6 +27,12 @@ export default function Borrowings() {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Redirect if user is not logged in
+    if (!loading && !user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent('/borrowings'));
+      return;
+    }
+    
     // Load borrowings from localStorage
     const loadBorrowings = () => {
       try {
@@ -216,8 +222,13 @@ export default function Borrowings() {
   }
 
   if (!user) {
-    // This should not be rendered as the useEffect will redirect
-    return null;
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <p className="text-gray-600">Please log in to view borrowings...</p>
+        </div>
+      </Layout>
+    );
   }
 
   return (

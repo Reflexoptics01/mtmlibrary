@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
+import { useAuth } from '../../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface RisalaItem {
   id: string;
@@ -24,6 +26,8 @@ export default function Risala() {
   const [searchTerm, setSearchTerm] = useState('');
   const [yearFilter, setYearFilter] = useState<number | ''>('');
   const [languageFilter, setLanguageFilter] = useState('');
+  const { user } = useAuth();
+  const router = useRouter();
   
   // Mock years and languages for now - will be dynamically loaded later
   const years = [2025, 2024, 2023, 2022, 2021];
@@ -31,48 +35,8 @@ export default function Risala() {
 
   useEffect(() => {
     // This will be connected to Firebase in the next step
-    // For now, use mock data
-    const mockRisala: RisalaItem[] = [
-      {
-        id: '1',
-        title: 'Farameen-e-Attar - Ramadan Special',
-        month: 'April',
-        year: 2025,
-        language: 'Urdu',
-        uploadDate: new Date().toISOString(),
-        description: 'Special Ramadan edition of monthly Farameen-e-Attar publication',
-        bookletUrl: '/assets/sample.pdf',
-        audioUrl: '/assets/sample.mp3',
-        thumbnailUrl: '/assets/dawateislami_logo.png',
-        downloadCount: 45
-      },
-      {
-        id: '2',
-        title: 'Farameen-e-Attar - Rajab Edition',
-        month: 'March',
-        year: 2025,
-        language: 'Urdu',
-        uploadDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString(),
-        description: 'Monthly Farameen-e-Attar publication for Rajab',
-        bookletUrl: '/assets/sample.pdf',
-        audioUrl: '/assets/sample.mp3',
-        thumbnailUrl: '/assets/dawateislami_logo.png',
-        downloadCount: 32
-      },
-      {
-        id: '3',
-        title: 'Farameen-e-Attar - Jamadi-ul-Akhir Edition',
-        month: 'February',
-        year: 2025,
-        language: 'Hindi',
-        uploadDate: new Date(new Date().setDate(new Date().getDate() - 60)).toISOString(),
-        description: 'Monthly Farameen-e-Attar publication for Jamadi-ul-Akhir',
-        bookletUrl: '/assets/sample.pdf',
-        audioUrl: '/assets/sample.mp3',
-        thumbnailUrl: '/assets/dawateislami_logo.png',
-        downloadCount: 28
-      },
-    ];
+    // For now, use empty data as requested
+    const mockRisala: RisalaItem[] = [];
     
     setRisalaItems(mockRisala);
     setLoading(false);
@@ -139,9 +103,14 @@ export default function Risala() {
               ))}
             </select>
             
-            <button className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md">
-              Upload New Risala
-            </button>
+            {user && (
+              <button 
+                className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+                onClick={() => router.push('/risala/upload')}
+              >
+                Upload New Risala
+              </button>
+            )}
           </div>
         </div>
         
@@ -154,66 +123,81 @@ export default function Risala() {
             {error}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRisala.length === 0 ? (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-600">No publications found matching your criteria</p>
+          <>
+            {!user && (
+              <div className="bg-green-50 p-6 rounded-lg shadow border border-green-200 mb-6">
+                <h2 className="text-xl font-semibold text-green-800 mb-2">
+                  Welcome to the Farameen-e-Attar Publications Section
+                </h2>
+                <p className="text-gray-700">
+                  This section contains monthly publications from Dawate Islami. Please <a href="/auth/login" className="text-green-600 hover:underline">log in</a> to access more features of the library system.
+                </p>
               </div>
-            ) : (
-              filteredRisala.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-4">
-                    <div className="flex justify-between items-start">
-                      <h2 className="text-xl font-semibold text-green-800 mb-2">{item.title}</h2>
-                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        {item.language}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 mb-2">
-                      {item.month} {item.year}
-                    </p>
-                    
-                    <p className="text-gray-700 mb-4">
-                      {item.description}
-                    </p>
-                    
-                    <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
-                      <span>Uploaded: {formatDate(item.uploadDate)}</span>
-                      <span>{item.downloadCount} downloads</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <a 
-                        href={item.bookletUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded-md text-sm"
-                      >
-                        Download Booklet
-                      </a>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRisala.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-600">No publications found matching your criteria</p>
+                </div>
+              ) : (
+                filteredRisala.map((item) => (
+                  <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex justify-between items-start">
+                        <h2 className="text-xl font-semibold text-green-800 mb-2">{item.title}</h2>
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          {item.language}
+                        </span>
+                      </div>
                       
-                      <a 
-                        href={item.audioUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
-                      >
-                        Listen Audio
-                      </a>
+                      <p className="text-gray-600 mb-2">
+                        {item.month} {item.year}
+                      </p>
                       
-                      <button
-                        onClick={() => handleDeleteRisala(item.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
-                      >
-                        Delete
-                      </button>
+                      <p className="text-gray-700 mb-4">
+                        {item.description}
+                      </p>
+                      
+                      <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
+                        <span>Uploaded: {formatDate(item.uploadDate)}</span>
+                        <span>{item.downloadCount} downloads</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <a 
+                          href={item.bookletUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded-md text-sm"
+                        >
+                          Download Booklet
+                        </a>
+                        
+                        <a 
+                          href={item.audioUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
+                        >
+                          Listen Audio
+                        </a>
+                        
+                        {user && (
+                          <button
+                            onClick={() => handleDeleteRisala(item.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          </>
         )}
       </div>
     </Layout>
