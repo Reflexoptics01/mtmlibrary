@@ -26,14 +26,8 @@ interface Book {
   fine: number;
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
-}
-
-export default function StudentDetail({ params, searchParams }: PageProps) {
+// Using a simpler approach to avoid type conflicts
+export default function StudentDetail({ params }: any) {
   const [student, setStudent] = useState<Student | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
