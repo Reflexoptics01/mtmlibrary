@@ -99,6 +99,10 @@ export default function Books() {
     }
   };
 
+  const handleViewBook = (id: string) => {
+    router.push(`/books/${id}`);
+  };
+
   return (
     <Layout>
       <div className="mb-8">
@@ -203,6 +207,12 @@ export default function Books() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button 
+                              className="text-blue-600 hover:text-blue-900 mr-3"
+                              onClick={() => handleViewBook(book.id)}
+                            >
+                          View
+                        </button>
                             <button 
                               className="text-indigo-600 hover:text-indigo-900 mr-3"
                               onClick={() => handleEditBook(book.id)}
