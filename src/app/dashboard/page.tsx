@@ -6,8 +6,14 @@ import { useAuth } from '../../context/AuthContext';
 import Layout from '../../components/layout/Layout';
 
 export default function Dashboard() {
-  const { user, userData, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+
+  // Mock user data for display purposes
+  const mockUserData = {
+    name: 'Admin User',
+    role: 'librarian'
+  };
 
   useEffect(() => {
     // Redirect if user is not logged in
@@ -26,7 +32,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!user || !userData) {
+  if (!user) {
     return null; // Will redirect in useEffect
   }
 
@@ -37,10 +43,10 @@ export default function Dashboard() {
         
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
-            Welcome, {userData.name}
+            Welcome, {mockUserData.name}
           </h2>
           <p className="text-gray-700 mb-4">
-            You are logged in as a {userData.role}.
+            You are logged in as a {mockUserData.role}.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
