@@ -26,11 +26,14 @@ interface Book {
   fine: number;
 }
 
-type Props = {
-  params: { id: string }
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: Record<string, string | string[] | undefined>;
 }
 
-export default function StudentDetail({ params }: Props) {
+export default function StudentDetail({ params, searchParams }: PageProps) {
   const [student, setStudent] = useState<Student | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
