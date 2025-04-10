@@ -13,14 +13,16 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Image
-                src="/assets/dawateislami_logo.png"
-                alt="Dawate Islami Logo"
-                width={40}
-                height={40}
-                className="mr-2"
-              />
-              <span className="font-bold text-lg">Madersatul Madina Library</span>
+              <div className="bg-white p-1 rounded-full flex items-center justify-center">
+                <Image
+                  src="/assets/dawateislami_logo.png"
+                  alt="Dawate Islami Logo"
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              </div>
+              <span className="font-bold text-lg ml-2">Madersatul Madina Library</span>
             </Link>
           </div>
           
@@ -38,7 +40,7 @@ export default function Navbar() {
             <Link href="/risala" className="px-3 py-2 rounded-md hover:bg-green-700">
               Farameen-e-Attar
             </Link>
-            <Link href="/auth/login" className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-500">
+            <Link href="/auth/login" className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
               Login
             </Link>
           </div>
@@ -83,7 +85,7 @@ export default function Navbar() {
             <Link href="/risala" className="block px-3 py-2 rounded-md hover:bg-green-700">
               Farameen-e-Attar
             </Link>
-            <Link href="/auth/login" className="block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500">
+            <Link href="/auth/login" className="block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
               Login
             </Link>
           </div>
