@@ -14,11 +14,14 @@ interface Student {
   address: string;
 }
 
-type Props = {
-  params: { id: string }
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: Record<string, string | string[] | undefined>;
 }
 
-export default function EditStudent({ params }: Props) {
+export default function EditStudent({ params, searchParams }: PageProps) {
   const [student, setStudent] = useState<Student>({
     id: '',
     name: '',

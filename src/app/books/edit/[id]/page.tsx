@@ -17,11 +17,14 @@ interface Book {
   description: string;
 }
 
-type Props = {
-  params: { id: string }
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: Record<string, string | string[] | undefined>;
 }
 
-export default function EditBook({ params }: Props) {
+export default function EditBook({ params, searchParams }: PageProps) {
   const [book, setBook] = useState<Book>({
     id: '',
     title: '',
