@@ -91,6 +91,15 @@ export default function Risala() {
     return date.toLocaleDateString('en-IN');
   };
 
+  const handleDeleteRisala = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this publication?')) {
+      console.log('Deleting risala with ID:', id);
+      // This would normally delete from Firebase
+      // For now, just update the local state
+      setRisalaItems(prev => prev.filter(item => item.id !== id));
+    }
+  };
+
   return (
     <Layout>
       <div className="mb-8">
@@ -192,6 +201,13 @@ export default function Risala() {
                       >
                         Listen Audio
                       </a>
+                      
+                      <button
+                        onClick={() => handleDeleteRisala(item.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>

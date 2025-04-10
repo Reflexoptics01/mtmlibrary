@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   
   const handleLogout = async () => {
     try {
@@ -16,6 +18,32 @@ export default function Navbar() {
     } catch (error) {
       console.error('Failed to logout:', error);
     }
+  };
+
+  // Function to check if a path is active (exact match or starts with the path)
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
+
+  // Get the classes for the navigation link based on active state
+  const getLinkClasses = (path: string) => {
+    return `px-3 py-2 rounded-md ${
+      isActive(path) 
+        ? 'bg-green-700 text-white' 
+        : 'hover:bg-green-700'
+    }`;
+  };
+
+  // Get the classes for the mobile navigation link based on active state
+  const getMobileLinkClasses = (path: string) => {
+    return `block px-3 py-2 rounded-md ${
+      isActive(path) 
+        ? 'bg-green-700 text-white' 
+        : 'hover:bg-green-700'
+    }`;
   };
 
   return (
@@ -39,21 +67,21 @@ export default function Navbar() {
           
           {/* Desktop menu */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/books" className="px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/books" className={getLinkClasses('/books')}>
               Books
             </Link>
-            <Link href="/students" className="px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/students" className={getLinkClasses('/students')}>
               Students
             </Link>
-            <Link href="/borrowings" className="px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/borrowings" className={getLinkClasses('/borrowings')}>
               Borrowings
             </Link>
-            <Link href="/risala" className="px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/risala" className={getLinkClasses('/risala')}>
               Farameen-e-Attar
             </Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="px-3 py-2 rounded-md hover:bg-green-700">
+                <Link href="/dashboard" className={getLinkClasses('/dashboard')}>
                   Dashboard
                 </Link>
                 <button 
@@ -64,7 +92,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link href="/auth/login" className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
+              <Link href="/auth/login" className={isActive('/auth/login') ? "px-3 py-2 rounded-md bg-green-500 transition-colors" : "px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors"}>
                 Login
               </Link>
             )}
@@ -98,21 +126,21 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link href="/books" className="block px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/books" className={getMobileLinkClasses('/books')}>
               Books
             </Link>
-            <Link href="/students" className="block px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/students" className={getMobileLinkClasses('/students')}>
               Students
             </Link>
-            <Link href="/borrowings" className="block px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/borrowings" className={getMobileLinkClasses('/borrowings')}>
               Borrowings
             </Link>
-            <Link href="/risala" className="block px-3 py-2 rounded-md hover:bg-green-700">
+            <Link href="/risala" className={getMobileLinkClasses('/risala')}>
               Farameen-e-Attar
             </Link>
             {user ? (
               <>
-                <Link href="/dashboard" className="block px-3 py-2 rounded-md hover:bg-green-700">
+                <Link href="/dashboard" className={getMobileLinkClasses('/dashboard')}>
                   Dashboard
                 </Link>
                 <button 
@@ -123,7 +151,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link href="/auth/login" className="block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
+              <Link href="/auth/login" className={isActive('/auth/login') ? "block px-3 py-2 rounded-md bg-green-500 transition-colors" : "block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors"}>
                 Login
               </Link>
             )}

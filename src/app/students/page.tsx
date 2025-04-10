@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
 
 interface Student {
   id: string;
@@ -21,10 +22,22 @@ export default function Students() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   
   useEffect(() => {
+    // Check authentication first
+    if (!authLoading && !user) {
+      // If user is trying to add, edit, or view details, redirect to login
+      if (window.location.pathname.includes('/register') || 
+          window.location.pathname.includes('/edit') || 
+          /\/students\/[^\/]+$/.test(window.location.pathname)) {
+        router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname));
+        return;
+      }
+    }
+    
     // This will be connected to Firebase in the next step
-    // For now, use mock data
+    // For now, use mock data and check localStorage for deleted students
     const mockStudents: Student[] = [
       {
         id: '1',
@@ -58,34 +71,69 @@ export default function Students() {
       },
     ];
     
-    setStudents(mockStudents);
+    // Check localStorage for deleted student IDs
+    const deletedStudentIds = localStorage.getItem('deletedStudentIds');
+    let activeStudents = mockStudents;
+    
+    if (deletedStudentIds) {
+      const deletedIds = JSON.parse(deletedStudentIds) as string[];
+      activeStudents = mockStudents.filter(student => !deletedIds.includes(student.id));
+    }
+    
+    setStudents(activeStudents);
     setLoading(false);
-  }, []);
+  }, [authLoading, user, router]);
 
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     student.contactNumber.includes(searchTerm)
   );
   
+  const handleRegisterStudent = () => {
+    if (!user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent('/students/register'));
+    } else {
+      router.push('/students/register');
+    }
+  };
+  
   const handleViewStudent = (id: string) => {
-    // In a real app, this would navigate to a detailed view of the student
-    console.log('Viewing student with ID:', id);
-    alert(`Viewing student ${id} - This functionality will be implemented soon`);
-    // router.push(`/students/${id}`);
+    if (!user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent(`/students/${id}`));
+    } else {
+      router.push(`/students/${id}`);
+    }
   };
   
   const handleEditStudent = (id: string) => {
-    // In a real app, this would navigate to an edit page with the student ID
-    console.log('Editing student with ID:', id);
-    alert(`Editing student ${id} - This functionality will be implemented soon`);
-    // router.push(`/students/edit/${id}`);
+    if (!user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent(`/students/edit/${id}`));
+    } else {
+      router.push(`/students/edit/${id}`);
+    }
   };
   
   const handleDeleteStudent = (id: string) => {
     // In a real app, this would call Firebase to delete the student
     if (window.confirm('Are you sure you want to delete this student?')) {
       console.log('Deleting student with ID:', id);
+      
+      // Update local state
       setStudents(students.filter(student => student.id !== id));
+      
+      // Store deleted IDs in localStorage to persist across refreshes
+      const deletedStudentIds = localStorage.getItem('deletedStudentIds');
+      let deletedIds: string[] = [];
+      
+      if (deletedStudentIds) {
+        deletedIds = JSON.parse(deletedStudentIds);
+      }
+      
+      if (!deletedIds.includes(id)) {
+        deletedIds.push(id);
+      }
+      
+      localStorage.setItem('deletedStudentIds', JSON.stringify(deletedIds));
     }
   };
 
@@ -108,7 +156,7 @@ export default function Students() {
           <div>
             <button 
               className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
-              onClick={() => router.push('/students/register')}
+              onClick={handleRegisterStudent}
             >
               Register New Student
             </button>
