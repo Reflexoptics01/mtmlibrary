@@ -17,14 +17,8 @@ interface Book {
   description: string;
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
-}
-
-export default function EditBook({ params, searchParams }: PageProps) {
+// Using a simpler approach to avoid type conflicts
+export default function EditBook({ params }: any) {
   const [book, setBook] = useState<Book>({
     id: '',
     title: '',

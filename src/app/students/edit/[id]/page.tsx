@@ -14,14 +14,8 @@ interface Student {
   address: string;
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
-}
-
-export default function EditStudent({ params, searchParams }: PageProps) {
+// Using a simpler approach to avoid type conflicts
+export default function EditStudent({ params }: any) {
   const [student, setStudent] = useState<Student>({
     id: '',
     name: '',

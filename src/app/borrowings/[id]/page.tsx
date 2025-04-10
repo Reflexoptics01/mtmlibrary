@@ -24,14 +24,8 @@ interface Borrowing {
   remarks: string;
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
-}
-
-export default function BorrowingDetail({ params, searchParams }: PageProps) {
+// Using a simpler approach to avoid type conflicts
+export default function BorrowingDetail({ params }: any) {
   const [borrowing, setBorrowing] = useState<Borrowing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
