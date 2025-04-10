@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Book {
   id: string;
@@ -20,6 +21,7 @@ export default function Books() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const router = useRouter();
   
   // Mock categories for now - will be dynamically loaded later
   const categories = ['Islamic', 'History', 'Biography', 'Literature', 'Science', 'Reference'];
@@ -67,6 +69,21 @@ export default function Books() {
     const matchesCategory = filterCategory === '' || book.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
+  
+  const handleEditBook = (id: string) => {
+    // In a real app, this would navigate to an edit page with the book ID
+    console.log('Editing book with ID:', id);
+    alert(`Editing book ${id} - This functionality will be implemented soon`);
+    // router.push(`/books/edit/${id}`);
+  };
+  
+  const handleDeleteBook = (id: string) => {
+    // In a real app, this would call Firebase to delete the book
+    if (window.confirm('Are you sure you want to delete this book?')) {
+      console.log('Deleting book with ID:', id);
+      setBooks(books.filter(book => book.id !== id));
+    }
+  };
 
   return (
     <Layout>
@@ -96,7 +113,10 @@ export default function Books() {
               ))}
             </select>
             
-            <button className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md">
+            <button 
+              className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+              onClick={() => router.push('/books/add')}
+            >
               Add New Book
             </button>
           </div>
@@ -167,10 +187,16 @@ export default function Books() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                        <button 
+                          className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          onClick={() => handleEditBook(book.id)}
+                        >
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button 
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDeleteBook(book.id)}
+                        >
                           Delete
                         </button>
                       </td>
