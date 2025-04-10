@@ -1,13 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Layout from '../../components/layout/Layout';
 
+// Define interfaces for stats
+interface QuickStats {
+  totalBooks: number;
+  registeredStudents: number;
+  currentBorrowings: number;
+  overdueItems: number;
+  risalaDistributed: number;
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [stats, setStats] = useState<QuickStats>({
+    totalBooks: 0,
+    registeredStudents: 0,
+    currentBorrowings: 0,
+    overdueItems: 0,
+    risalaDistributed: 0
+  });
 
   // Mock user data for display purposes
   const mockUserData = {
@@ -22,6 +38,46 @@ export default function Dashboard() {
     }
   }, [user, loading, router]);
 
+  // Load stats from localStorage
+  useEffect(() => {
+    if (user) {
+      try {
+        // Get book stats
+        const storedBooks = localStorage.getItem('library_books');
+        const books = storedBooks ? JSON.parse(storedBooks) : [];
+        
+        // Get student stats
+        const storedStudents = localStorage.getItem('library_students');
+        const students = storedStudents ? JSON.parse(storedStudents) : [];
+        
+        // Get borrowing stats
+        const storedBorrowings = localStorage.getItem('library_borrowings');
+        const borrowings = storedBorrowings ? JSON.parse(storedBorrowings) : [];
+        
+        // Get risala stats
+        const storedRisala = localStorage.getItem('library_risala');
+        const risala = storedRisala ? JSON.parse(storedRisala) : [];
+        
+        // Calculate current borrowings and overdue
+        const currentDate = new Date();
+        const currentBorrowings = borrowings.filter(b => b.status === 'Borrowed' || b.status === 'Overdue');
+        const overdueItems = borrowings.filter(b => b.status === 'Overdue' || 
+          (b.status === 'Borrowed' && new Date(b.dueDate) < currentDate));
+        
+        // Update stats
+        setStats({
+          totalBooks: books.length,
+          registeredStudents: students.length,
+          currentBorrowings: currentBorrowings.length,
+          overdueItems: overdueItems.length,
+          risalaDistributed: risala.length
+        });
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+  }, [user]);
+  
   if (loading) {
     return (
       <Layout>
@@ -104,53 +160,38 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-200">
               <p className="text-gray-500 text-sm">Total Books</p>
-              <h3 className="text-3xl font-bold text-blue-700 mt-2">247</h3>
+              <h3 className="text-3xl font-bold text-blue-700 mt-2">{stats.totalBooks}</h3>
               <div className="flex items-center mt-2 text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd"></path>
-                  </svg>
-                  12 new this month
-                </span>
+                <span className="text-gray-500">Catalog Size</span>
               </div>
             </div>
             
             <div className="bg-purple-50 p-4 rounded-lg shadow border border-purple-200">
               <p className="text-gray-500 text-sm">Registered Students</p>
-              <h3 className="text-3xl font-bold text-purple-700 mt-2">153</h3>
+              <h3 className="text-3xl font-bold text-purple-700 mt-2">{stats.registeredStudents}</h3>
               <div className="flex items-center mt-2 text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd"></path>
-                  </svg>
-                  5 new this month
-                </span>
+                <span className="text-gray-500">Student Database</span>
               </div>
             </div>
             
             <div className="bg-amber-50 p-4 rounded-lg shadow border border-amber-200">
               <p className="text-gray-500 text-sm">Current Borrowings</p>
-              <h3 className="text-3xl font-bold text-amber-700 mt-2">42</h3>
+              <h3 className="text-3xl font-bold text-amber-700 mt-2">{stats.currentBorrowings}</h3>
               <div className="flex items-center mt-2 text-sm">
                 <span className="text-red-500 flex items-center">
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clipRule="evenodd"></path>
                   </svg>
-                  3 overdue
+                  {stats.overdueItems} overdue
                 </span>
               </div>
             </div>
             
             <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
               <p className="text-gray-500 text-sm">Risala Distributed</p>
-              <h3 className="text-3xl font-bold text-green-700 mt-2">89</h3>
+              <h3 className="text-3xl font-bold text-green-700 mt-2">{stats.risalaDistributed}</h3>
               <div className="flex items-center mt-2 text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd"></path>
-                  </svg>
-                  14 this month
-                </span>
+                <span className="text-gray-500">Publications</span>
               </div>
             </div>
           </div>
