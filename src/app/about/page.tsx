@@ -36,6 +36,12 @@ export default function About() {
               </div>
             </div>
             
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6">
+              <p className="text-gray-700 font-medium">
+                <span className="font-bold">Disclaimer:</span> This library management system is not an official product of Dawat-e-Islami or its India branch. It is an independent project created by a devoted individual for the benefit of Islamic educational institutions.
+              </p>
+            </div>
+            
             <h2 className="text-xl font-semibold text-green-700 mb-4">Dawat-e-Islami India Branch</h2>
             <p className="text-gray-700 mb-4">
               The India branch of Dawat-e-Islami has been actively serving the community through numerous religious, educational, and welfare initiatives. Present in most states across India, it operates several Madaris, educational institutions, and welfare programs.
