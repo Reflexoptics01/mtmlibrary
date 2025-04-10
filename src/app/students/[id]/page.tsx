@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layout/Layout';
-import { getDoc, doc, getDocs, collection, where, query, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { getDoc, doc, getDocs, collection, where, query, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { getStudentById } from '@/lib/firebase/db';
 
