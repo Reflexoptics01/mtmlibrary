@@ -60,8 +60,8 @@ export default function Dashboard() {
         
         // Calculate current borrowings and overdue
         const currentDate = new Date();
-        const currentBorrowings = borrowings.filter(b => b.status === 'Borrowed' || b.status === 'Overdue');
-        const overdueItems = borrowings.filter(b => b.status === 'Overdue' || 
+        const currentBorrowings = borrowings.filter((b: any) => b.status === 'Borrowed' || b.status === 'Overdue');
+        const overdueItems = borrowings.filter((b: any) => b.status === 'Overdue' || 
           (b.status === 'Borrowed' && new Date(b.dueDate) < currentDate));
         
         // Update stats
