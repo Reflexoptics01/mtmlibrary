@@ -23,21 +23,30 @@ export default function AddBook() {
     setLoading(true);
 
     try {
-      // Here we would normally send this data to Firebase
-      // For now, we'll just simulate a successful book addition
-      console.log('Book data:', { 
-        title, 
-        author, 
-        isbn, 
-        category, 
-        publisher, 
-        publicationYear, 
-        quantity: parseInt(quantity),
-        description 
-      });
+      // Create new book object
+      const newBook = {
+        id: Date.now().toString(), // Generate a unique ID
+        title,
+        author,
+        isbn,
+        category,
+        publisher,
+        publicationYear,
+        totalCopies: parseInt(quantity),
+        availableCopies: parseInt(quantity),
+        description,
+        addedDate: new Date().toISOString()
+      };
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Get existing books from localStorage
+      const storedBooks = localStorage.getItem('library_books');
+      const books = storedBooks ? JSON.parse(storedBooks) : [];
+      
+      // Add new book to the array
+      books.push(newBook);
+      
+      // Save back to localStorage
+      localStorage.setItem('library_books', JSON.stringify(books));
       
       // Redirect back to books list
       router.push('/books');

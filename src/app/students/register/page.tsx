@@ -12,6 +12,7 @@ export default function RegisterStudent() {
   const [grade, setGrade] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fatherName, setFatherName] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,12 +21,28 @@ export default function RegisterStudent() {
     setLoading(true);
 
     try {
-      // Here we would normally send this data to Firebase
-      // For now, we'll just simulate a successful registration
-      console.log('Student data:', { name, rollNumber, contactNumber, address, grade });
+      // Create new student object
+      const newStudent = {
+        id: Date.now().toString(), // Generate a unique ID
+        name,
+        rollNumber,
+        grade,
+        fatherName,
+        contactNumber,
+        address,
+        borrowedBooks: 0,
+        finesDue: 0
+      };
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Get existing students from localStorage
+      const storedStudents = localStorage.getItem('library_students');
+      const students = storedStudents ? JSON.parse(storedStudents) : [];
+      
+      // Add new student to the array
+      students.push(newStudent);
+      
+      // Save back to localStorage
+      localStorage.setItem('library_students', JSON.stringify(students));
       
       // Redirect back to students list
       router.push('/students');
@@ -114,6 +131,21 @@ export default function RegisterStudent() {
                   placeholder="Contact Number"
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fatherName">
+                  Father's Name
+                </label>
+                <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="fatherName"
+                  type="text"
+                  placeholder="Father's Name"
+                  value={fatherName}
+                  onChange={(e) => setFatherName(e.target.value)}
                   required
                 />
               </div>
