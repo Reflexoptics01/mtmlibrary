@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layout/Layout';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -33,11 +33,7 @@ export default function AddBorrowing() {
   const [success, setSuccess] = useState('');
   
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  
-  // Get studentId from URL if provided
-  const studentId = searchParams.get('studentId');
   
   useEffect(() => {
     // If not logged in, redirect to login page
@@ -69,11 +65,7 @@ export default function AddBorrowing() {
         setBooks(availableBooks);
         setStudents(mockStudents);
         
-        // If studentId is provided in URL, select that student
-        if (studentId) {
-          setSelectedStudentId(studentId);
-        }
-        
+        // We'll handle studentId from URL in client-side only - not during build
         setLoading(false);
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -82,7 +74,7 @@ export default function AddBorrowing() {
     };
     
     loadData();
-  }, [studentId, router, user, authLoading]);
+  }, [router, user, authLoading]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
