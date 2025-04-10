@@ -5,6 +5,7 @@ import Layout from '@/components/layout/Layout';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
+import Link from 'next/link';
 
 interface Book {
   id: string;
@@ -38,49 +39,56 @@ export default function Books() {
       }
     }
     
-    // This will be connected to Firebase in the next step
-    // For now, use mock data and check localStorage for deleted books
-    const mockBooks: Book[] = [
-      {
-        id: '1',
-        title: 'Faizane Sunnat',
-        author: 'Ameer e Ahle Sunnat',
-        category: 'Islamic',
-        totalCopies: 5,
-        availableCopies: 3,
-        addedDate: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        title: 'Namaz ke Ahkam',
-        author: 'Maulana Ilyas Qadri',
-        category: 'Islamic',
-        totalCopies: 10,
-        availableCopies: 8,
-        addedDate: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        title: 'Faizan-e-Quran',
-        author: 'Dawat-e-Islami',
-        category: 'Islamic',
-        totalCopies: 7,
-        availableCopies: 4,
-        addedDate: new Date().toISOString(),
-      },
-    ];
-    
-    // Check localStorage for deleted book IDs
-    const deletedBookIds = localStorage.getItem('deletedBookIds');
-    let activeBooks = mockBooks;
-    
-    if (deletedBookIds) {
-      const deletedIds = JSON.parse(deletedBookIds) as string[];
-      activeBooks = mockBooks.filter(book => !deletedIds.includes(book.id));
-    }
-    
-    setBooks(activeBooks);
-    setLoading(false);
+    // Load books from localStorage or use default data if not available
+    const loadBooks = () => {
+      try {
+        const storedBooks = localStorage.getItem('library_books');
+        if (storedBooks) {
+          setBooks(JSON.parse(storedBooks));
+        } else {
+          // Initial mock data
+          const initialBooks: Book[] = [
+            {
+              id: '1',
+              title: 'Faizane Sunnat',
+              author: 'Ameer e Ahle Sunnat',
+              category: 'Islamic',
+              totalCopies: 5,
+              availableCopies: 3,
+              addedDate: new Date().toISOString(),
+            },
+            {
+              id: '2',
+              title: 'Namaz ke Ahkam',
+              author: 'Maulana Ilyas Qadri',
+              category: 'Islamic',
+              totalCopies: 10,
+              availableCopies: 8,
+              addedDate: new Date().toISOString(),
+            },
+            {
+              id: '3',
+              title: 'Faizan e Quran',
+              author: 'Dawat e Islami',
+              category: 'Islamic',
+              totalCopies: 5,
+              availableCopies: 4,
+              addedDate: new Date().toISOString(),
+            },
+          ];
+          
+          // Save initial data to localStorage
+          localStorage.setItem('library_books', JSON.stringify(initialBooks));
+          setBooks(initialBooks);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading books:', error);
+        setLoading(false);
+      }
+    };
+
+    loadBooks();
   }, [authLoading, user, router]);
 
   const filteredBooks = books.filter((book: Book) => {
@@ -108,26 +116,11 @@ export default function Books() {
   };
   
   const handleDeleteBook = (id: string) => {
-    // In a real app, this would call Firebase to delete the book
     if (window.confirm('Are you sure you want to delete this book?')) {
-      console.log('Deleting book with ID:', id);
-      
-      // Update local state
-      setBooks(books.filter(book => book.id !== id));
-      
-      // Store deleted IDs in localStorage to persist across refreshes
-      const deletedBookIds = localStorage.getItem('deletedBookIds');
-      let deletedIds: string[] = [];
-      
-      if (deletedBookIds) {
-        deletedIds = JSON.parse(deletedBookIds);
-      }
-      
-      if (!deletedIds.includes(id)) {
-        deletedIds.push(id);
-      }
-      
-      localStorage.setItem('deletedBookIds', JSON.stringify(deletedIds));
+      const updatedBooks = books.filter((book) => book.id !== id);
+      // Update localStorage
+      localStorage.setItem('library_books', JSON.stringify(updatedBooks));
+      setBooks(updatedBooks);
     }
   };
 
