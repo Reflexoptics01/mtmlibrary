@@ -24,7 +24,11 @@ interface Borrowing {
   remarks: string;
 }
 
-export default function BorrowingDetail({ params }: { params: { id: string } }) {
+type Props = {
+  params: { id: string }
+}
+
+export default function BorrowingDetail({ params }: Props) {
   const [borrowing, setBorrowing] = useState<Borrowing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
