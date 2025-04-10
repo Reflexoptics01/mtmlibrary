@@ -14,7 +14,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { register } = useAuth();
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +34,9 @@ export default function Register() {
         role: 'librarian',
       };
       
-      await register(email, password, userData);
+      await signUp(email, password);
+      // Note: You'll need to store the userData separately, perhaps in Firestore
+      // after signUp is successful
       router.push('/dashboard');
     } catch (err: any) {
       setLoading(false);
