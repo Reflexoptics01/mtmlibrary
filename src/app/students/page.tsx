@@ -8,87 +8,106 @@ import { useAuth } from '../../context/AuthContext';
 interface Student {
   id: string;
   name: string;
+  rollNumber: string;
+  grade: string;
   fatherName: string;
   contactNumber: string;
-  address: string;
-  registrationDate: any;
   borrowedBooks: number;
   finesDue: number;
 }
 
 export default function Students() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  
-  useEffect(() => {
-    // Check authentication first
-    if (!authLoading && !user) {
-      // If user is trying to add, edit, or view details, redirect to login
-      if (window.location.pathname.includes('/register') || 
-          window.location.pathname.includes('/edit') || 
-          /\/students\/[^\/]+$/.test(window.location.pathname)) {
-        router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname));
-        return;
-      }
-    }
-    
-    // This will be connected to Firebase in the next step
-    // For now, use mock data and check localStorage for deleted students
-    const mockStudents: Student[] = [
-      {
-        id: '1',
-        name: 'Ahmed Khan',
-        fatherName: 'Imran Khan',
-        contactNumber: '9876543210',
-        address: 'Gangavathi',
-        registrationDate: new Date().toISOString(),
-        borrowedBooks: 2,
-        finesDue: 0
-      },
-      {
-        id: '2',
-        name: 'Mohammed Ali',
-        fatherName: 'Yusuf Ali',
-        contactNumber: '8765432109',
-        address: 'Gangavathi',
-        registrationDate: new Date().toISOString(),
-        borrowedBooks: 1,
-        finesDue: 25
-      },
-      {
-        id: '3',
-        name: 'Fatima Begum',
-        fatherName: 'Abdul Rahman',
-        contactNumber: '7654321098',
-        address: 'Gangavathi',
-        registrationDate: new Date().toISOString(),
-        borrowedBooks: 0,
-        finesDue: 0
-      },
-    ];
-    
-    // Check localStorage for deleted student IDs
-    const deletedStudentIds = localStorage.getItem('deletedStudentIds');
-    let activeStudents = mockStudents;
-    
-    if (deletedStudentIds) {
-      const deletedIds = JSON.parse(deletedStudentIds) as string[];
-      activeStudents = mockStudents.filter(student => !deletedIds.includes(student.id));
-    }
-    
-    setStudents(activeStudents);
-    setLoading(false);
-  }, [authLoading, user, router]);
+  const { user } = useAuth();
 
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    student.contactNumber.includes(searchTerm)
-  );
-  
+  useEffect(() => {
+    // Load students from localStorage or use default data if not available
+    const loadStudents = () => {
+      try {
+        const storedStudents = localStorage.getItem('library_students');
+        if (storedStudents) {
+          const parsedStudents = JSON.parse(storedStudents);
+          setStudents(parsedStudents);
+          setFilteredStudents(parsedStudents);
+        } else {
+          // Initial mock data
+          const initialStudents: Student[] = [
+            {
+              id: '1',
+              name: 'Ahmed Khan',
+              rollNumber: 'STD001',
+              grade: 'Class 10',
+              fatherName: 'Imran Khan',
+              contactNumber: '9876543210',
+              borrowedBooks: 2,
+              finesDue: 0,
+            },
+            {
+              id: '2',
+              name: 'Mohammed Ali',
+              rollNumber: 'STD002',
+              grade: 'Class 9',
+              fatherName: 'Yusuf Ali',
+              contactNumber: '9876543211',
+              borrowedBooks: 1,
+              finesDue: 25,
+            },
+            {
+              id: '3',
+              name: 'Fatima Begum',
+              rollNumber: 'STD003',
+              grade: 'Class 8',
+              fatherName: 'Rahman Khan',
+              contactNumber: '9876543212',
+              borrowedBooks: 0,
+              finesDue: 0,
+            },
+          ];
+          
+          // Save initial data to localStorage
+          localStorage.setItem('library_students', JSON.stringify(initialStudents));
+          setStudents(initialStudents);
+          setFilteredStudents(initialStudents);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading students:', error);
+        setLoading(false);
+      }
+    };
+
+    loadStudents();
+  }, []);
+
+  // Handle search
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredStudents(students);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = students.filter(
+        student => 
+          student.name.toLowerCase().includes(query) ||
+          student.rollNumber.toLowerCase().includes(query) ||
+          student.grade.toLowerCase().includes(query)
+      );
+      setFilteredStudents(filtered);
+    }
+  }, [searchQuery, students]);
+
+  const handleDeleteStudent = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this student record?')) {
+      const updatedStudents = students.filter((student) => student.id !== id);
+      // Update localStorage
+      localStorage.setItem('library_students', JSON.stringify(updatedStudents));
+      setStudents(updatedStudents);
+    }
+  };
+
   const handleRegisterStudent = () => {
     if (!user) {
       router.push('/auth/login?redirect=' + encodeURIComponent('/students/register'));
@@ -112,30 +131,6 @@ export default function Students() {
       router.push(`/students/edit/${id}`);
     }
   };
-  
-  const handleDeleteStudent = (id: string) => {
-    // In a real app, this would call Firebase to delete the student
-    if (window.confirm('Are you sure you want to delete this student?')) {
-      console.log('Deleting student with ID:', id);
-      
-      // Update local state
-      setStudents(students.filter(student => student.id !== id));
-      
-      // Store deleted IDs in localStorage to persist across refreshes
-      const deletedStudentIds = localStorage.getItem('deletedStudentIds');
-      let deletedIds: string[] = [];
-      
-      if (deletedStudentIds) {
-        deletedIds = JSON.parse(deletedStudentIds);
-      }
-      
-      if (!deletedIds.includes(id)) {
-        deletedIds.push(id);
-      }
-      
-      localStorage.setItem('deletedStudentIds', JSON.stringify(deletedIds));
-    }
-  };
 
   return (
     <Layout>
@@ -146,10 +141,10 @@ export default function Students() {
           <div className="mb-4 md:mb-0">
             <input
               type="text"
-              placeholder="Search students by name or contact..."
+              placeholder="Search students by name, roll number, or grade..."
               className="px-4 py-2 border rounded-md w-full md:w-80"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           
@@ -167,10 +162,6 @@ export default function Students() {
           <div className="text-center py-8">
             <p className="text-gray-600">Loading students...</p>
           </div>
-        ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
         ) : (
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
@@ -178,6 +169,12 @@ export default function Students() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Roll Number
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Grade
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Father's Name
@@ -208,6 +205,12 @@ export default function Students() {
                     <tr key={student.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{student.rollNumber}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{student.grade}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{student.fatherName}</div>

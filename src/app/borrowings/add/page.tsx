@@ -21,6 +21,18 @@ interface Student {
   finesDue: number;
 }
 
+interface Borrowing {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  studentId: string;
+  studentName: string;
+  borrowDate: string;
+  dueDate: string;
+  returnDate: string | null;
+  status: 'Borrowed' | 'Returned' | 'Overdue' | 'Lost';
+}
+
 export default function AddBorrowing() {
   const [books, setBooks] = useState<Book[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -42,30 +54,43 @@ export default function AddBorrowing() {
       return;
     }
     
-    // Load available books and students
+    // Load available books and students from localStorage
     const loadData = async () => {
       try {
-        // This would fetch from Firebase in production
-        // Mock data for now
-        const mockBooks: Book[] = [
-          { id: '1', title: 'Faizane Sunnat', author: 'Ameer e Ahle Sunnat', availableCopies: 3 },
-          { id: '2', title: 'Namaz ke Ahkam', author: 'Maulana Ilyas Qadri', availableCopies: 8 },
-          { id: '3', title: 'Faizan-e-Quran', author: 'Dawat-e-Islami', availableCopies: 4 },
-        ];
+        // Load books from localStorage
+        let availableBooks: Book[] = [];
+        const storedBooks = localStorage.getItem('library_books');
+        if (storedBooks) {
+          const allBooks = JSON.parse(storedBooks);
+          // Filter out books with no available copies
+          availableBooks = allBooks.filter((book: Book) => book.availableCopies > 0);
+        } else {
+          // Fallback mock data if localStorage is empty
+          availableBooks = [
+            { id: '1', title: 'Faizane Sunnat', author: 'Ameer e Ahle Sunnat', availableCopies: 3 },
+            { id: '2', title: 'Namaz ke Ahkam', author: 'Maulana Ilyas Qadri', availableCopies: 8 },
+            { id: '3', title: 'Faizan-e-Quran', author: 'Dawat-e-Islami', availableCopies: 4 },
+          ];
+        }
         
-        const mockStudents: Student[] = [
-          { id: '1', name: 'Ahmed Khan', rollNumber: 'STD001', grade: 'Class 10', borrowedBooks: 2, finesDue: 0 },
-          { id: '2', name: 'Mohammed Ali', rollNumber: 'STD002', grade: 'Class 9', borrowedBooks: 1, finesDue: 25 },
-          { id: '3', name: 'Fatima Begum', rollNumber: 'STD003', grade: 'Class 8', borrowedBooks: 0, finesDue: 0 },
-        ];
-        
-        // Filter out books with no available copies
-        const availableBooks = mockBooks.filter(book => book.availableCopies > 0);
+        // Load students from localStorage
+        let storedStudents: Student[] = [];
+        const storedStudentsData = localStorage.getItem('library_students');
+        if (storedStudentsData) {
+          storedStudents = JSON.parse(storedStudentsData);
+        } else {
+          // Fallback mock data if localStorage is empty
+          storedStudents = [
+            { id: '1', name: 'Ahmed Khan', rollNumber: 'STD001', grade: 'Class 10', borrowedBooks: 2, finesDue: 0 },
+            { id: '2', name: 'Mohammed Ali', rollNumber: 'STD002', grade: 'Class 9', borrowedBooks: 1, finesDue: 25 },
+            { id: '3', name: 'Fatima Begum', rollNumber: 'STD003', grade: 'Class 8', borrowedBooks: 0, finesDue: 0 },
+          ];
+        }
         
         setBooks(availableBooks);
-        setStudents(mockStudents);
+        setStudents(storedStudents);
         
-        // We'll handle studentId from URL in client-side only - not during build
+        // We'll handle studentId from URL in client-side
         setLoading(false);
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -98,10 +123,6 @@ export default function AddBorrowing() {
     setError('');
     
     try {
-      // This would be a Firebase call in production
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
       const selectedStudent = students.find(s => s.id === selectedStudentId);
       const selectedBook = books.find(b => b.id === selectedBookId);
       
@@ -111,15 +132,56 @@ export default function AddBorrowing() {
         const dueDate = new Date(borrowDate);
         dueDate.setDate(dueDate.getDate() + durationDays);
         
-        console.log('Borrowing details:', {
+        // Create new borrowing record
+        const newBorrowing: Borrowing = {
+          id: Date.now().toString(), // Simple unique ID for demo
           bookId: selectedBookId,
           bookTitle: selectedBook.title,
           studentId: selectedStudentId,
           studentName: selectedStudent.name,
           borrowDate: borrowDate.toISOString(),
           dueDate: dueDate.toISOString(),
+          returnDate: null,
           status: 'Borrowed'
-        });
+        };
+        
+        // Save the borrowing to localStorage
+        const storedBorrowings = localStorage.getItem('library_borrowings');
+        const borrowings = storedBorrowings ? JSON.parse(storedBorrowings) : [];
+        borrowings.push(newBorrowing);
+        localStorage.setItem('library_borrowings', JSON.stringify(borrowings));
+        
+        // Update book's available copies
+        const allBooks = localStorage.getItem('library_books');
+        if (allBooks) {
+          const books = JSON.parse(allBooks);
+          const updatedBooks = books.map((book: Book) => {
+            if (book.id === selectedBookId) {
+              return {
+                ...book,
+                availableCopies: book.availableCopies - 1
+              };
+            }
+            return book;
+          });
+          localStorage.setItem('library_books', JSON.stringify(updatedBooks));
+        }
+        
+        // Update student's borrowed books count
+        const allStudents = localStorage.getItem('library_students');
+        if (allStudents) {
+          const students = JSON.parse(allStudents);
+          const updatedStudents = students.map((student: Student) => {
+            if (student.id === selectedStudentId) {
+              return {
+                ...student,
+                borrowedBooks: student.borrowedBooks + 1
+              };
+            }
+            return student;
+          });
+          localStorage.setItem('library_students', JSON.stringify(updatedStudents));
+        }
         
         setSuccess('Book successfully borrowed');
         
@@ -238,9 +300,9 @@ export default function AddBorrowing() {
                     
                     {(() => {
                       const selectedStudent = getSelectedStudent();
-                      return selectedStudent?.borrowedBooks && selectedStudent.borrowedBooks >= 3 ? (
+                      return (selectedStudent?.borrowedBooks ?? 0) >= 3 ? (
                         <p className="mt-2 text-orange-600 text-sm">
-                          Warning: This student already has {selectedStudent.borrowedBooks} books borrowed
+                          Warning: This student already has {selectedStudent?.borrowedBooks} books borrowed
                         </p>
                       ) : null;
                     })()}
