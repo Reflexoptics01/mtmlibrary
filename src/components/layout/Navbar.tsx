@@ -3,9 +3,20 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Redirect handled by auth context's useEffect
+    } catch (error) {
+      console.error('Failed to logout:', error);
+    }
+  };
 
   return (
     <nav className="bg-green-800 text-white shadow-md">
@@ -40,9 +51,23 @@ export default function Navbar() {
             <Link href="/risala" className="px-3 py-2 rounded-md hover:bg-green-700">
               Farameen-e-Attar
             </Link>
-            <Link href="/auth/login" className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
-              Login
-            </Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="px-3 py-2 rounded-md hover:bg-green-700">
+                  Dashboard
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="px-3 py-2 rounded-md bg-red-600 hover:bg-red-500 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link href="/auth/login" className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
+                Login
+              </Link>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -85,9 +110,23 @@ export default function Navbar() {
             <Link href="/risala" className="block px-3 py-2 rounded-md hover:bg-green-700">
               Farameen-e-Attar
             </Link>
-            <Link href="/auth/login" className="block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
-              Login
-            </Link>
+            {user ? (
+              <>
+                <Link href="/dashboard" className="block px-3 py-2 rounded-md hover:bg-green-700">
+                  Dashboard
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="block w-full text-left px-3 py-2 rounded-md bg-red-600 hover:bg-red-500 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link href="/auth/login" className="block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors">
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}
