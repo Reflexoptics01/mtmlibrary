@@ -61,13 +61,16 @@ export default function About() {
           <div className="p-6">
             <h2 className="text-2xl font-semibold text-green-700 mb-4">About This Software</h2>
             <p className="text-gray-700 mb-4">
-              This library management system was created by a dedicated member of Dawat-e-Islami for the Ishale Sawab (reward in the hereafter) of their grandparents. It was developed with love and devotion to support Islamic educational institutions in managing their libraries efficiently.
+              This library management system was created for the Ishale Sawab (reward in the hereafter) of the developer's grandparents. It was developed to support Islamic educational institutions in managing their libraries efficiently.
             </p>
             <p className="text-gray-700 mb-4">
               The system provides comprehensive tools for managing books, student records, borrowings, and Farameen-e-Attar publications, making it easier for Islamic institutions to organize their resources and better serve their communities.
             </p>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">Open Source</h3>
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-green-800 mb-2">Important Notice</h3>
+              <p className="text-gray-700 mb-2">
+                <span className="font-bold">This is NOT an official website or product of Dawat-e-Islami.</span> This library management system is an independent project and is not affiliated with or endorsed by Dawat-e-Islami or its India branch.
+              </p>
               <p className="text-gray-700">
                 This software is open-sourced and available for use by any Islamic institution worldwide. It can be freely adopted, modified, and implemented by madrassas, Islamic schools, and libraries to enhance their operations and better serve their communities. For integration assistance or customization, please reach out via the contact information in the Help section.
               </p>
