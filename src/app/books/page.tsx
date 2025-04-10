@@ -6,6 +6,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
+import { getAllBooks, deleteBook } from '@/lib/firebase/db';
 
 interface Book {
   id: string;
@@ -14,7 +15,7 @@ interface Book {
   category: string;
   totalCopies: number;
   availableCopies: number;
-  addedDate: any;
+  addedDate: string;
 }
 
 export default function Books() {
@@ -39,24 +40,17 @@ export default function Books() {
       }
     }
     
-    // Load books from localStorage or use default data if not available
-    const loadBooks = () => {
+    // Load books from Firestore
+    const loadBooks = async () => {
       try {
-        const storedBooks = localStorage.getItem('library_books');
-        if (storedBooks) {
-          setBooks(JSON.parse(storedBooks));
-        } else {
-          // Initial mock data - removing as requested
-          const initialBooks: Book[] = [];
-          
-          // Save initial data to localStorage
-          localStorage.setItem('library_books', JSON.stringify(initialBooks));
-          setBooks(initialBooks);
-        }
+        setLoading(true);
+        const booksData = await getAllBooks();
+        setBooks(booksData as Book[]);
         setLoading(false);
       } catch (error) {
         console.error('Error loading books:', error);
-        setLoading(false);
+        setError('Failed to load books. Please try again.');
+    setLoading(false);
       }
     };
 
@@ -87,12 +81,21 @@ export default function Books() {
     }
   };
   
-  const handleDeleteBook = (id: string) => {
+  const handleDeleteBook = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
-      const updatedBooks = books.filter((book) => book.id !== id);
-      // Update localStorage
-      localStorage.setItem('library_books', JSON.stringify(updatedBooks));
-      setBooks(updatedBooks);
+      try {
+        setLoading(true);
+        await deleteBook(id);
+        
+        // Update local state
+        const updatedBooks = books.filter((book) => book.id !== id);
+        setBooks(updatedBooks);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error deleting book:', error);
+        setError('Failed to delete book. Please try again.');
+        setLoading(false);
+      }
     }
   };
 
@@ -103,116 +106,121 @@ export default function Books() {
         
         {user ? (
           <>
-            <div className="flex flex-col md:flex-row justify-between mb-6">
-              <div className="mb-4 md:mb-0">
-                <input
-                  type="text"
-                  placeholder="Search books by title or author..."
-                  className="px-4 py-2 border rounded-md w-full md:w-80"
-                  value={searchTerm}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <div className="flex space-x-2">
-                <select
-                  className="px-4 py-2 border rounded-md"
-                  value={filterCategory}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterCategory(e.target.value)}
-                >
-                  <option value="">All Categories</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-                
+        <div className="flex flex-col md:flex-row justify-between mb-6">
+          <div className="mb-4 md:mb-0">
+            <input
+              type="text"
+              placeholder="Search books by title or author..."
+              className="px-4 py-2 border rounded-md w-full md:w-80"
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex space-x-2">
+            <select
+              className="px-4 py-2 border rounded-md"
+              value={filterCategory}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterCategory(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            
                 <button 
                   className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
                   onClick={handleAddBook}
                 >
-                  Add New Book
-                </button>
-              </div>
-            </div>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Loading books...</p>
-              </div>
-            ) : error ? (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {error}
-              </div>
-            ) : (
-              <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Title
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Author
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Copies
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Available
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredBooks.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                          No books found matching your criteria
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredBooks.map((book: Book) => (
-                        <tr key={book.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{book.title}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">{book.author}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              {book.category}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {book.totalCopies}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              book.availableCopies > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {book.availableCopies}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              Add New Book
+            </button>
+          </div>
+        </div>
+        
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Loading books...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        ) : (
+          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Author
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Copies
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Available
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredBooks.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                      No books found matching your criteria
+                    </td>
+                  </tr>
+                ) : (
+                  filteredBooks.map((book: Book) => (
+                    <tr key={book.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{book.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{book.author}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          {book.category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {book.totalCopies}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          book.availableCopies > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {book.availableCopies}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button 
                               className="text-indigo-600 hover:text-indigo-900 mr-3"
                               onClick={() => handleEditBook(book.id)}
                             >
-                              Edit
-                            </button>
-                            {/* Delete button removed as requested */}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                          Edit
+                        </button>
+                            <button 
+                              className="text-red-600 hover:text-red-900"
+                              onClick={() => handleDeleteBook(book.id)}
+                            >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
               </div>
             )}
           </>

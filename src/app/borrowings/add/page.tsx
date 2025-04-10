@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layout/Layout';
 import { useAuth } from '../../../context/AuthContext';
+import { getAllBooks, getAllStudents, addBorrowing, updateBook, updateStudent, getBookById, getStudentById } from '@/lib/firebase/db';
 
 interface Book {
   id: string;
@@ -54,43 +55,21 @@ export default function AddBorrowing() {
       return;
     }
     
-    // Load available books and students from localStorage
+    // Load available books and students from Firestore
     const loadData = async () => {
       try {
-        // Load books from localStorage
-        let availableBooks: Book[] = [];
-        const storedBooks = localStorage.getItem('library_books');
-        if (storedBooks) {
-          const allBooks = JSON.parse(storedBooks);
-          // Filter out books with no available copies
-          availableBooks = allBooks.filter((book: Book) => book.availableCopies > 0);
-        } else {
-          // Fallback mock data if localStorage is empty
-          availableBooks = [
-            { id: '1', title: 'Faizane Sunnat', author: 'Ameer e Ahle Sunnat', availableCopies: 3 },
-            { id: '2', title: 'Namaz ke Ahkam', author: 'Maulana Ilyas Qadri', availableCopies: 8 },
-            { id: '3', title: 'Faizan-e-Quran', author: 'Dawat-e-Islami', availableCopies: 4 },
-          ];
-        }
+        setLoading(true);
         
-        // Load students from localStorage
-        let storedStudents: Student[] = [];
-        const storedStudentsData = localStorage.getItem('library_students');
-        if (storedStudentsData) {
-          storedStudents = JSON.parse(storedStudentsData);
-        } else {
-          // Fallback mock data if localStorage is empty
-          storedStudents = [
-            { id: '1', name: 'Ahmed Khan', rollNumber: 'STD001', grade: 'Class 10', borrowedBooks: 2, finesDue: 0 },
-            { id: '2', name: 'Mohammed Ali', rollNumber: 'STD002', grade: 'Class 9', borrowedBooks: 1, finesDue: 25 },
-            { id: '3', name: 'Fatima Begum', rollNumber: 'STD003', grade: 'Class 8', borrowedBooks: 0, finesDue: 0 },
-          ];
-        }
-        
+        // Load books from Firestore
+        const booksData = await getAllBooks();
+        // Filter out books with no available copies
+        const availableBooks = booksData.filter((book) => book.availableCopies > 0);
         setBooks(availableBooks);
-        setStudents(storedStudents);
         
-        // We'll handle studentId from URL in client-side
+        // Load students from Firestore
+        const studentsData = await getAllStudents();
+        setStudents(studentsData);
+        
         setLoading(false);
       } catch (err) {
         setError('Failed to load data. Please try again.');
@@ -133,8 +112,7 @@ export default function AddBorrowing() {
         dueDate.setDate(dueDate.getDate() + durationDays);
         
         // Create new borrowing record
-        const newBorrowing: Borrowing = {
-          id: Date.now().toString(), // Simple unique ID for demo
+        const newBorrowing = {
           bookId: selectedBookId,
           bookTitle: selectedBook.title,
           studentId: selectedStudentId,
@@ -145,43 +123,20 @@ export default function AddBorrowing() {
           status: 'Borrowed'
         };
         
-        // Save the borrowing to localStorage
-        const storedBorrowings = localStorage.getItem('library_borrowings');
-        const borrowings = storedBorrowings ? JSON.parse(storedBorrowings) : [];
-        borrowings.push(newBorrowing);
-        localStorage.setItem('library_borrowings', JSON.stringify(borrowings));
+        // Save the borrowing to Firestore
+        await addBorrowing(newBorrowing);
         
         // Update book's available copies
-        const allBooks = localStorage.getItem('library_books');
-        if (allBooks) {
-          const books = JSON.parse(allBooks);
-          const updatedBooks = books.map((book: Book) => {
-            if (book.id === selectedBookId) {
-              return {
-                ...book,
-                availableCopies: book.availableCopies - 1
-              };
-            }
-            return book;
-          });
-          localStorage.setItem('library_books', JSON.stringify(updatedBooks));
-        }
+        await updateBook(selectedBookId, {
+          ...selectedBook,
+          availableCopies: selectedBook.availableCopies - 1
+        });
         
         // Update student's borrowed books count
-        const allStudents = localStorage.getItem('library_students');
-        if (allStudents) {
-          const students = JSON.parse(allStudents);
-          const updatedStudents = students.map((student: Student) => {
-            if (student.id === selectedStudentId) {
-              return {
-                ...student,
-                borrowedBooks: student.borrowedBooks + 1
-              };
-            }
-            return student;
-          });
-          localStorage.setItem('library_students', JSON.stringify(updatedStudents));
-        }
+        await updateStudent(selectedStudentId, {
+          ...selectedStudent,
+          borrowedBooks: selectedStudent.borrowedBooks + 1
+        });
         
         setSuccess('Book successfully borrowed');
         
