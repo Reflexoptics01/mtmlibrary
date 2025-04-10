@@ -27,13 +27,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 &copy; {year} Madersatul Madina Faizane Gareeb Nawaz Gangavathi
               </p>
               <p className="text-center md:text-left text-sm">
-                Dawate Islami India Branch
+                Library Management System
               </p>
             </div>
             <div className="flex space-x-4">
               <Link href="/about" className="hover:text-green-300">About</Link>
               <Link href="/help" className="hover:text-green-300">Help</Link>
-              <Link href="/contact" className="hover:text-green-300">Contact</Link>
             </div>
           </div>
         </div>
