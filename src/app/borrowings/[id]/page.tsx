@@ -35,7 +35,14 @@ interface Student {
   // other student properties
 }
 
-export default function BorrowingDetail({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function BorrowingDetail({ params, searchParams }: PageProps) {
   const [borrowing, setBorrowing] = useState<BorrowingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
