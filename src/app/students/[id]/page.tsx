@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layout/Layout';
+import { getDoc, doc, getDocs, collection, where, query, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { getStudentById } from '@/lib/firebase/db';
 
 interface Student {
   id: string;
@@ -36,43 +39,57 @@ export default function StudentDetail({ params }: any) {
   const { id } = params;
 
   useEffect(() => {
-    // This would normally fetch data from Firebase
-    // For now, use mock data
-    const mockStudent: Student = {
-      id,
-      name: 'Ahmed Khan',
-      fatherName: 'Imran Khan',
-      rollNumber: 'STD001',
-      grade: 'Class 10',
-      contactNumber: '9876543210',
-      address: 'Main Street, Gangavathi',
-      registrationDate: new Date().toISOString(),
-      borrowedBooks: 2,
-      finesDue: 0
+    const fetchStudentData = async () => {
+      try {
+        setLoading(true);
+        // Fetch student data using our utility function
+        const studentData = await getStudentById(id);
+        
+        if (!studentData) {
+          setError('Student not found');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch borrowed books for this student
+        const borrowedBooksQuery = query(
+          collection(db, 'borrowings'),
+          where('studentId', '==', id),
+          where('status', '==', 'Borrowed')
+        );
+        
+        const borrowedBooksSnapshot = await getDocs(borrowedBooksQuery);
+        const books: Book[] = [];
+        
+        for (const borrowingDoc of borrowedBooksSnapshot.docs) {
+          const borrowingData = borrowingDoc.data() as { bookId: string; borrowDate: string; dueDate: string; fine: number };
+          const bookDoc = await getDoc(doc(db, 'books', borrowingData.bookId));
+          
+          if (bookDoc.exists()) {
+            const bookData = bookDoc.data() as { title: string };
+            
+            books.push({
+              id: borrowingDoc.id,
+              title: bookData.title,
+              borrowDate: borrowingData.borrowDate,
+              dueDate: borrowingData.dueDate,
+              isOverdue: new Date(borrowingData.dueDate) < new Date(),
+              fine: borrowingData.fine || 0
+            });
+          }
+        }
+
+        setStudent(studentData as Student);
+        setBorrowedBooks(books);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+        setError('Failed to load student data');
+        setLoading(false);
+      }
     };
 
-    const mockBorrowedBooks: Book[] = [
-      {
-        id: '1',
-        title: 'Faizane Sunnat',
-        borrowDate: '2023-10-01',
-        dueDate: '2023-10-15',
-        isOverdue: false,
-        fine: 0
-      },
-      {
-        id: '2',
-        title: 'Namaz ke Ahkam',
-        borrowDate: '2023-09-15',
-        dueDate: '2023-09-30',
-        isOverdue: true,
-        fine: 0
-      }
-    ];
-    
-    setStudent(mockStudent);
-    setBorrowedBooks(mockBorrowedBooks);
-    setLoading(false);
+    fetchStudentData();
   }, [id]);
 
   const formatDate = (dateString: string) => {
@@ -80,15 +97,37 @@ export default function StudentDetail({ params }: any) {
     return date.toLocaleDateString('en-IN');
   };
 
-  const handleReturnBook = (bookId: string) => {
-    // This would normally update Firebase
-    // For now, just update the local state
-    setBorrowedBooks(borrowedBooks.filter(book => book.id !== bookId));
-    if (student) {
-      setStudent({
-        ...student,
-        borrowedBooks: student.borrowedBooks - 1
+  const handleReturnBook = async (bookId: string) => {
+    try {
+      // Update the borrowing record
+      await updateDoc(doc(db, 'borrowings', bookId), {
+        status: 'Returned',
+        returnDate: new Date().toISOString()
       });
+
+      // Update the book's availability
+      const borrowingDoc = await getDoc(doc(db, 'borrowings', bookId));
+      if (borrowingDoc.exists()) {
+        const bookId = borrowingDoc.data().bookId;
+        const bookDoc = await getDoc(doc(db, 'books', bookId));
+        if (bookDoc.exists()) {
+          const currentAvailable = bookDoc.data().availableCopies || 0;
+          await updateDoc(doc(db, 'books', bookId), {
+            availableCopies: currentAvailable + 1
+          });
+        }
+      }
+
+      // Update local state
+      setBorrowedBooks(borrowedBooks.filter(book => book.id !== bookId));
+      if (student) {
+        setStudent({
+          ...student,
+          borrowedBooks: student.borrowedBooks - 1
+        });
+      }
+    } catch (error) {
+      console.error('Error returning book:', error);
     }
   };
 
@@ -210,10 +249,10 @@ export default function StudentDetail({ params }: any) {
                           <div className="text-sm font-medium text-gray-900">{book.title}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{book.borrowDate}</div>
+                          <div className="text-sm text-gray-500">{formatDate(book.borrowDate)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{book.dueDate}</div>
+                          <div className="text-sm text-gray-500">{formatDate(book.dueDate)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
