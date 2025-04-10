@@ -1,7 +1,13 @@
 // Server Component
 import RisalaDetailClient from './RisalaDetailClient';
 
-// This follows the exact pattern for Next.js App Router dynamic routes
-export default function RisalaPage({ params }: { params: { id: string } }) {
-  return <RisalaDetailClient id={params.id} />;
+// Define the proper types for Next.js 15 page props with async params
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function RisalaPage({ params }: PageProps) {
+  // Await the params promise to get the actual params object
+  const resolvedParams = await params;
+  return <RisalaDetailClient id={resolvedParams.id} />;
 }
