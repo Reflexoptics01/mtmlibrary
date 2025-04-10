@@ -96,6 +96,10 @@ export default function Navbar() {
                 Login
               </Link>
             )}
+            <div className="flex space-x-4">
+              <Link href="/about" className="hover:text-green-300">About</Link>
+              <Link href="/help" className="hover:text-green-300">Help</Link>
+            </div>
           </div>
           
           {/* Mobile menu button */}

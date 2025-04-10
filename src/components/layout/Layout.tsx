@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
+import Link from 'next/link';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   // Use a state variable for the year that's only set after component mounts
@@ -30,9 +31,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </p>
             </div>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-green-300">Contact</a>
-              <a href="#" className="hover:text-green-300">About</a>
-              <a href="#" className="hover:text-green-300">Help</a>
+              <Link href="/about" className="hover:text-green-300">About</Link>
+              <Link href="/help" className="hover:text-green-300">Help</Link>
+              <Link href="/contact" className="hover:text-green-300">Contact</Link>
             </div>
           </div>
         </div>
