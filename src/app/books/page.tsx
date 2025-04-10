@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
 
 interface Book {
   id: string;
@@ -22,13 +23,23 @@ export default function Books() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   
   // Mock categories for now - will be dynamically loaded later
   const categories = ['Islamic', 'History', 'Biography', 'Literature', 'Science', 'Reference'];
 
   useEffect(() => {
+    // Check authentication first
+    if (!authLoading && !user) {
+      // If user is trying to add or edit, redirect to login
+      if (window.location.pathname.includes('/add') || window.location.pathname.includes('/edit')) {
+        router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname));
+        return;
+      }
+    }
+    
     // This will be connected to Firebase in the next step
-    // For now, use mock data
+    // For now, use mock data and check localStorage for deleted books
     const mockBooks: Book[] = [
       {
         id: '1',
@@ -59,9 +70,18 @@ export default function Books() {
       },
     ];
     
-    setBooks(mockBooks);
+    // Check localStorage for deleted book IDs
+    const deletedBookIds = localStorage.getItem('deletedBookIds');
+    let activeBooks = mockBooks;
+    
+    if (deletedBookIds) {
+      const deletedIds = JSON.parse(deletedBookIds) as string[];
+      activeBooks = mockBooks.filter(book => !deletedIds.includes(book.id));
+    }
+    
+    setBooks(activeBooks);
     setLoading(false);
-  }, []);
+  }, [authLoading, user, router]);
 
   const filteredBooks = books.filter((book: Book) => {
     const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -70,18 +90,44 @@ export default function Books() {
     return matchesSearch && matchesCategory;
   });
   
+  const handleAddBook = () => {
+    if (!user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent('/books/add'));
+    } else {
+      router.push('/books/add');
+    }
+  };
+  
   const handleEditBook = (id: string) => {
-    // In a real app, this would navigate to an edit page with the book ID
-    console.log('Editing book with ID:', id);
-    alert(`Editing book ${id} - This functionality will be implemented soon`);
-    // router.push(`/books/edit/${id}`);
+    if (!user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent(`/books/edit/${id}`));
+    } else {
+      // Navigate to the edit page with the book ID
+      router.push(`/books/edit/${id}`);
+    }
   };
   
   const handleDeleteBook = (id: string) => {
     // In a real app, this would call Firebase to delete the book
     if (window.confirm('Are you sure you want to delete this book?')) {
       console.log('Deleting book with ID:', id);
+      
+      // Update local state
       setBooks(books.filter(book => book.id !== id));
+      
+      // Store deleted IDs in localStorage to persist across refreshes
+      const deletedBookIds = localStorage.getItem('deletedBookIds');
+      let deletedIds: string[] = [];
+      
+      if (deletedBookIds) {
+        deletedIds = JSON.parse(deletedBookIds);
+      }
+      
+      if (!deletedIds.includes(id)) {
+        deletedIds.push(id);
+      }
+      
+      localStorage.setItem('deletedBookIds', JSON.stringify(deletedIds));
     }
   };
 
@@ -115,7 +161,7 @@ export default function Books() {
             
             <button 
               className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
-              onClick={() => router.push('/books/add')}
+              onClick={handleAddBook}
             >
               Add New Book
             </button>

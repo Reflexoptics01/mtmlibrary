@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
 
 interface Borrowing {
   id: string;
@@ -23,8 +25,16 @@ export default function Borrowings() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   
   useEffect(() => {
+    // If not logged in, redirect to login page
+    if (!authLoading && !user) {
+      router.push('/auth/login?redirect=' + encodeURIComponent('/borrowings'));
+      return;
+    }
+    
     // This will be connected to Firebase in the next step
     // For now, use mock data
     const today = new Date();
@@ -81,7 +91,87 @@ export default function Borrowings() {
     
     setBorrowings(mockBorrowings);
     setLoading(false);
-  }, []);
+  }, [authLoading, user, router]);
+
+  const handleReturnBook = (id: string) => {
+    if (window.confirm('Confirm book return?')) {
+      // This would update Firebase in production
+      // For now, just update the local state
+      const today = new Date();
+      setBorrowings(prevBorrowings => 
+        prevBorrowings.map(borrowing => 
+          borrowing.id === id ? {
+            ...borrowing,
+            returnDate: today.toISOString(),
+            status: borrowing.status === 'Overdue' ? 'Returned' : 'Returned',
+            fineAmount: borrowing.status === 'Overdue' ? calculateFine(borrowing.dueDate) : 0
+          } : borrowing
+        )
+      );
+    }
+  };
+  
+  const handlePayFine = (id: string) => {
+    if (window.confirm('Confirm fine payment?')) {
+      // This would update Firebase in production
+      // For now, just update the local state
+      setBorrowings(prevBorrowings => 
+        prevBorrowings.map(borrowing => 
+          borrowing.id === id ? {
+            ...borrowing,
+            finePaid: true
+          } : borrowing
+        )
+      );
+    }
+  };
+  
+  const handleMarkAsLost = (id: string) => {
+    if (window.confirm('Mark this book as lost? This will incur a fine.')) {
+      // This would update Firebase in production
+      // For now, just update the local state
+      setBorrowings(prevBorrowings => 
+        prevBorrowings.map(borrowing => 
+          borrowing.id === id ? {
+            ...borrowing,
+            status: 'Lost',
+            fineAmount: 250, // Base lost book fine
+            finePaid: false
+          } : borrowing
+        )
+      );
+    }
+  };
+  
+  const calculateFine = (dueDateString: string): number => {
+    const dueDate = new Date(dueDateString);
+    const today = new Date();
+    
+    // If not overdue, no fine
+    if (today <= dueDate) return 0;
+    
+    // Calculate days overdue
+    const diffTime = Math.abs(today.getTime() - dueDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // ₹5 per day fine
+    return diffDays * 5;
+  };
+
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    // This should not be rendered as the useEffect will redirect
+    return null;
+  }
 
   const filteredBorrowings = borrowings.filter(borrowing => {
     const matchesSearch = 
@@ -125,7 +215,10 @@ export default function Borrowings() {
               <option value="Lost">Lost</option>
             </select>
             
-            <button className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md">
+            <button 
+              className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+              onClick={() => router.push('/borrowings/add')}
+            >
               New Borrowing
             </button>
           </div>
@@ -212,18 +305,35 @@ export default function Borrowings() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {borrowing.status === 'Borrowed' || borrowing.status === 'Overdue' ? (
-                          <button className="text-green-600 hover:text-green-900 mr-3">
-                            Return
-                          </button>
+                          <>
+                            <button 
+                              onClick={() => handleReturnBook(borrowing.id)}
+                              className="text-green-600 hover:text-green-900 mr-3"
+                            >
+                              Return
+                            </button>
+                            <button 
+                              onClick={() => handleMarkAsLost(borrowing.id)}
+                              className="text-yellow-600 hover:text-yellow-900 mr-3"
+                            >
+                              Mark Lost
+                            </button>
+                          </>
                         ) : null}
                         
                         {borrowing.fineAmount > 0 && !borrowing.finePaid ? (
-                          <button className="text-blue-600 hover:text-blue-900 mr-3">
+                          <button 
+                            onClick={() => handlePayFine(borrowing.id)}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                          >
                             Pay Fine
                           </button>
                         ) : null}
                         
-                        <button className="text-indigo-600 hover:text-indigo-900">
+                        <button 
+                          onClick={() => router.push(`/borrowings/${borrowing.id}`)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
                           Details
                         </button>
                       </td>

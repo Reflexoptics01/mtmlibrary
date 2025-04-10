@@ -96,6 +96,66 @@ export default function Dashboard() {
           </div>
         </div>
         
+        <div className="bg-white shadow-md rounded-lg p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-green-700 mb-4">
+            Quick Stats
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-200">
+              <p className="text-gray-500 text-sm">Total Books</p>
+              <h3 className="text-3xl font-bold text-blue-700 mt-2">247</h3>
+              <div className="flex items-center mt-2 text-sm">
+                <span className="text-green-500 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd"></path>
+                  </svg>
+                  12 new this month
+                </span>
+              </div>
+            </div>
+            
+            <div className="bg-purple-50 p-4 rounded-lg shadow border border-purple-200">
+              <p className="text-gray-500 text-sm">Registered Students</p>
+              <h3 className="text-3xl font-bold text-purple-700 mt-2">153</h3>
+              <div className="flex items-center mt-2 text-sm">
+                <span className="text-green-500 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd"></path>
+                  </svg>
+                  5 new this month
+                </span>
+              </div>
+            </div>
+            
+            <div className="bg-amber-50 p-4 rounded-lg shadow border border-amber-200">
+              <p className="text-gray-500 text-sm">Current Borrowings</p>
+              <h3 className="text-3xl font-bold text-amber-700 mt-2">42</h3>
+              <div className="flex items-center mt-2 text-sm">
+                <span className="text-red-500 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clipRule="evenodd"></path>
+                  </svg>
+                  3 overdue
+                </span>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
+              <p className="text-gray-500 text-sm">Risala Distributed</p>
+              <h3 className="text-3xl font-bold text-green-700 mt-2">89</h3>
+              <div className="flex items-center mt-2 text-sm">
+                <span className="text-green-500 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd"></path>
+                  </svg>
+                  14 this month
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className="bg-white shadow-md rounded-lg p-6">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">
             Quick Actions
