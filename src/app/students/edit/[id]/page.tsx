@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../../components/layout/Layout';
+import { getStudentById, updateStudent } from '@/lib/firebase/db';
 
 interface Student {
   id: string;
@@ -14,7 +15,6 @@ interface Student {
   address: string;
 }
 
-// Using a simpler approach to avoid type conflicts
 export default function EditStudent({ params }: any) {
   const [student, setStudent] = useState<Student>({
     id: '',
@@ -34,25 +34,27 @@ export default function EditStudent({ params }: any) {
   const { id } = params;
 
   useEffect(() => {
-    // This would normally fetch student data from Firebase
-    // For now, use mock data
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const mockStudent: Student = {
-        id,
-        name: 'Ahmed Khan',
-        fatherName: 'Imran Khan',
-        rollNumber: 'STD001',
-        grade: 'Class 10',
-        contactNumber: '9876543210',
-        address: 'Main Street, Gangavathi'
-      };
-      
-      setStudent(mockStudent);
-      setLoading(false);
-    }, 500);
+    const fetchStudentData = async () => {
+      try {
+        setLoading(true);
+        const studentData = await getStudentById(id);
+        
+        if (!studentData) {
+          setError('Student not found');
+          setLoading(false);
+          return;
+        }
+
+        setStudent(studentData as Student);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+        setError('Failed to load student data');
+        setLoading(false);
+      }
+    };
+
+    fetchStudentData();
   }, [id]);
 
   const validate = (): boolean => {
@@ -100,10 +102,7 @@ export default function EditStudent({ params }: any) {
     setSuccess('');
     
     try {
-      // This would normally update the student data in Firebase
-      // For now, just simulate an API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await updateStudent(id, student);
       setSuccess('Student updated successfully');
       
       // Redirect to student details page after a brief delay
@@ -249,7 +248,7 @@ export default function EditStudent({ params }: any) {
                   Contact Number <span className="text-red-600">*</span>
                 </label>
                 <input
-                  type="text"
+                  type="tel"
                   id="contactNumber"
                   name="contactNumber"
                   value={student.contactNumber}
@@ -272,16 +271,16 @@ export default function EditStudent({ params }: any) {
                   rows={3}
                   className={`w-full px-3 py-2 border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-green-600`}
                   placeholder="Address"
-                ></textarea>
+                />
                 {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
               </div>
             </div>
             
-            <div className="mt-8 flex justify-end">
+            <div className="mt-6">
               <button
                 type="submit"
                 disabled={submitting}
-                className={`bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-md ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-600"
               >
                 {submitting ? 'Updating...' : 'Update Student'}
               </button>
