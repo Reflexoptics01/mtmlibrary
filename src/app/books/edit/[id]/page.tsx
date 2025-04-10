@@ -17,7 +17,11 @@ interface Book {
   description: string;
 }
 
-export default function EditBook({ params }: { params: { id: string } }) {
+type Props = {
+  params: { id: string }
+}
+
+export default function EditBook({ params }: Props) {
   const [book, setBook] = useState<Book>({
     id: '',
     title: '',

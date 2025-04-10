@@ -26,7 +26,11 @@ interface Book {
   fine: number;
 }
 
-export default function StudentDetail({ params }: { params: { id: string } }) {
+type Props = {
+  params: { id: string }
+}
+
+export default function StudentDetail({ params }: Props) {
   const [student, setStudent] = useState<Student | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);

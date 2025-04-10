@@ -14,7 +14,11 @@ interface Student {
   address: string;
 }
 
-export default function EditStudent({ params }: { params: { id: string } }) {
+type Props = {
+  params: { id: string }
+}
+
+export default function EditStudent({ params }: Props) {
   const [student, setStudent] = useState<Student>({
     id: '',
     name: '',
