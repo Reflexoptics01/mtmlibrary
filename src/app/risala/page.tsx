@@ -108,8 +108,8 @@ export default function Risala() {
                 className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
                 onClick={() => router.push('/risala/upload')}
               >
-                Upload New Risala
-              </button>
+              Upload New Risala
+            </button>
             )}
           </div>
         </div>
@@ -135,53 +135,53 @@ export default function Risala() {
               </div>
             )}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRisala.length === 0 ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-600">No publications found matching your criteria</p>
-                </div>
-              ) : (
-                filteredRisala.map((item) => (
-                  <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4">
-                      <div className="flex justify-between items-start">
-                        <h2 className="text-xl font-semibold text-green-800 mb-2">{item.title}</h2>
-                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                          {item.language}
-                        </span>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRisala.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-600">No publications found matching your criteria</p>
+              </div>
+            ) : (
+              filteredRisala.map((item) => (
+                <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex justify-between items-start">
+                      <h2 className="text-xl font-semibold text-green-800 mb-2">{item.title}</h2>
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        {item.language}
+                      </span>
+                    </div>
+                    
+                    <p className="text-gray-600 mb-2">
+                      {item.month} {item.year}
+                    </p>
+                    
+                    <p className="text-gray-700 mb-4">
+                      {item.description}
+                    </p>
+                    
+                    <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
+                      <span>Uploaded: {formatDate(item.uploadDate)}</span>
+                      <span>{item.downloadCount} downloads</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <a 
+                        href={item.bookletUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded-md text-sm"
+                      >
+                        Download Booklet
+                      </a>
                       
-                      <p className="text-gray-600 mb-2">
-                        {item.month} {item.year}
-                      </p>
-                      
-                      <p className="text-gray-700 mb-4">
-                        {item.description}
-                      </p>
-                      
-                      <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
-                        <span>Uploaded: {formatDate(item.uploadDate)}</span>
-                        <span>{item.downloadCount} downloads</span>
-                      </div>
-                      
-                      <div className="flex justify-between">
-                        <a 
-                          href={item.bookletUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded-md text-sm"
-                        >
-                          Download Booklet
-                        </a>
-                        
-                        <a 
-                          href={item.audioUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
-                        >
-                          Listen Audio
-                        </a>
+                      <a 
+                        href={item.audioUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
+                      >
+                        Listen Audio
+                      </a>
                         
                         {user && (
                           <button
@@ -192,11 +192,11 @@ export default function Risala() {
                           </button>
                         )}
                       </div>
-                    </div>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+              ))
+            )}
+          </div>
           </>
         )}
       </div>

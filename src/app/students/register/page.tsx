@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layout/Layout';
+import { addStudent } from '@/lib/firebase/db';
 
 export default function RegisterStudent() {
   const [name, setName] = useState('');
@@ -23,7 +24,6 @@ export default function RegisterStudent() {
     try {
       // Create new student object
       const newStudent = {
-        id: Date.now().toString(), // Generate a unique ID
         name,
         rollNumber,
         grade,
@@ -34,15 +34,8 @@ export default function RegisterStudent() {
         finesDue: 0
       };
       
-      // Get existing students from localStorage
-      const storedStudents = localStorage.getItem('library_students');
-      const students = storedStudents ? JSON.parse(storedStudents) : [];
-      
-      // Add new student to the array
-      students.push(newStudent);
-      
-      // Save back to localStorage
-      localStorage.setItem('library_students', JSON.stringify(students));
+      // Add to Firestore
+      await addStudent(newStudent);
       
       // Redirect back to students list
       router.push('/students');

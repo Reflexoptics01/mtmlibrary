@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layout/Layout';
+import { addBook } from '@/lib/firebase/db';
 
 export default function AddBook() {
   const [title, setTitle] = useState('');
@@ -25,28 +26,20 @@ export default function AddBook() {
     try {
       // Create new book object
       const newBook = {
-        id: Date.now().toString(), // Generate a unique ID
         title,
         author,
         isbn,
         category,
         publisher,
-        publicationYear,
+        publicationYear: publicationYear ? parseInt(publicationYear) : null,
         totalCopies: parseInt(quantity),
         availableCopies: parseInt(quantity),
         description,
         addedDate: new Date().toISOString()
       };
       
-      // Get existing books from localStorage
-      const storedBooks = localStorage.getItem('library_books');
-      const books = storedBooks ? JSON.parse(storedBooks) : [];
-      
-      // Add new book to the array
-      books.push(newBook);
-      
-      // Save back to localStorage
-      localStorage.setItem('library_books', JSON.stringify(books));
+      // Add to Firestore
+      await addBook(newBook);
       
       // Redirect back to books list
       router.push('/books');

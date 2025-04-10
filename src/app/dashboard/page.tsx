@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Layout from '../../components/layout/Layout';
+import { getAllBooks, getAllStudents, getAllBorrowings, getAllRisala } from '@/lib/firebase/db';
 
 // Define interfaces for stats
 interface QuickStats {
@@ -38,43 +39,48 @@ export default function Dashboard() {
     }
   }, [user, loading, router]);
 
-  // Load stats from localStorage
+  // Load stats from Firestore
   useEffect(() => {
     if (user) {
-      try {
-        // Get book stats
-        const storedBooks = localStorage.getItem('library_books');
-        const books = storedBooks ? JSON.parse(storedBooks) : [];
-        
-        // Get student stats
-        const storedStudents = localStorage.getItem('library_students');
-        const students = storedStudents ? JSON.parse(storedStudents) : [];
-        
-        // Get borrowing stats
-        const storedBorrowings = localStorage.getItem('library_borrowings');
-        const borrowings = storedBorrowings ? JSON.parse(storedBorrowings) : [];
-        
-        // Get risala stats
-        const storedRisala = localStorage.getItem('library_risala');
-        const risala = storedRisala ? JSON.parse(storedRisala) : [];
-        
-        // Calculate current borrowings and overdue
-        const currentDate = new Date();
-        const currentBorrowings = borrowings.filter((b: any) => b.status === 'Borrowed' || b.status === 'Overdue');
-        const overdueItems = borrowings.filter((b: any) => b.status === 'Overdue' || 
-          (b.status === 'Borrowed' && new Date(b.dueDate) < currentDate));
-        
-        // Update stats
-        setStats({
-          totalBooks: books.length,
-          registeredStudents: students.length,
-          currentBorrowings: currentBorrowings.length,
-          overdueItems: overdueItems.length,
-          risalaDistributed: risala.length
-        });
-      } catch (error) {
-        console.error('Error loading stats:', error);
-      }
+      const fetchStats = async () => {
+        try {
+          // Get book stats
+          const books = await getAllBooks();
+          
+          // Get student stats
+          const students = await getAllStudents();
+          
+          // Get borrowing stats
+          const borrowings = await getAllBorrowings();
+          
+          // Get risala stats
+          const risala = await getAllRisala();
+          
+          // Calculate current borrowings and overdue
+          const currentDate = new Date();
+          const currentBorrowings = borrowings.filter((b: any) => 
+            b.status === 'Borrowed' || b.status === 'Overdue'
+          );
+          
+          const overdueItems = borrowings.filter((b: any) => 
+            b.status === 'Overdue' || 
+            (b.status === 'Borrowed' && new Date(b.dueDate) < currentDate)
+          );
+          
+          // Update stats
+          setStats({
+            totalBooks: books.length,
+            registeredStudents: students.length,
+            currentBorrowings: currentBorrowings.length,
+            overdueItems: overdueItems.length,
+            risalaDistributed: risala.length
+          });
+        } catch (error) {
+          console.error('Error loading stats:', error);
+        }
+      };
+      
+      fetchStats();
     }
   }, [user]);
   

@@ -53,13 +53,13 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <div className="bg-white p-1 rounded-full flex items-center justify-center">
-                <Image
-                  src="/assets/dawateislami_logo.png"
-                  alt="Dawate Islami Logo"
-                  width={40}
-                  height={40}
+              <Image
+                src="/assets/dawateislami_logo.png"
+                alt="Dawate Islami Logo"
+                width={40}
+                height={40}
                   className="rounded-full"
-                />
+              />
               </div>
               <span className="font-bold text-lg ml-2">Madersatul Madina Library</span>
             </Link>
@@ -93,8 +93,8 @@ export default function Navbar() {
               </>
             ) : (
               <Link href="/auth/login" className={isActive('/auth/login') ? "px-3 py-2 rounded-md bg-green-500 transition-colors" : "px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors"}>
-                Login
-              </Link>
+              Login
+            </Link>
             )}
             <div className="flex space-x-4">
               <Link href="/about" className="hover:text-green-300">About</Link>
@@ -156,8 +156,8 @@ export default function Navbar() {
               </>
             ) : (
               <Link href="/auth/login" className={isActive('/auth/login') ? "block px-3 py-2 rounded-md bg-green-500 transition-colors" : "block px-3 py-2 rounded-md bg-green-600 hover:bg-green-500 transition-colors"}>
-                Login
-              </Link>
+              Login
+            </Link>
             )}
           </div>
         </div>

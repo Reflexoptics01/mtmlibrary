@@ -1,8 +1,7 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getAuth, Auth } from "firebase/auth";
-import { getStorage, FirebaseStorage } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,25 +15,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app: FirebaseApp;
-let db: Firestore;
-let auth: Auth;
-let storage: FirebaseStorage;
+const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase only once
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
+// Initialize Firebase services
+export const db = getFirestore(app);
+export const auth = getAuth(app);
 
-// Initialize services
-db = getFirestore(app);
-auth = getAuth(app);
-storage = getStorage(app);
-
-// Export Firebase services
-export { app, db, auth, storage };
+export default app;
 
 // Analytics is browser-only, so we need to export it differently
 export const getAnalytics = async () => {
