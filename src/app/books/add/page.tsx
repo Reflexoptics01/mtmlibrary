@@ -58,6 +58,14 @@ export default function AddBook() {
   };
 
   const categories = [
+    'Islamic',
+    'Islamic Fiqh',
+    'Tafseer',
+    'Hadith',
+    'Usul al Fiqh',
+    'Tasawuff',
+    'Islamic Studies',
+    'Arabic Literature',
     'Fiction',
     'Non-fiction',
     'Science',
@@ -67,8 +75,6 @@ export default function AddBook() {
     'Philosophy',
     'Self-help',
     'Reference',
-    'Islamic Studies',
-    'Arabic Literature',
     'Children\'s Books',
     'Textbooks',
     'Other'
