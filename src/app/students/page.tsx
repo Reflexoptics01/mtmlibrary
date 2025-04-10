@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
+import { useRouter } from 'next/navigation';
 
 interface Student {
   id: string;
@@ -19,6 +20,7 @@ export default function Students() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
   
   useEffect(() => {
     // This will be connected to Firebase in the next step
@@ -64,6 +66,28 @@ export default function Students() {
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     student.contactNumber.includes(searchTerm)
   );
+  
+  const handleViewStudent = (id: string) => {
+    // In a real app, this would navigate to a detailed view of the student
+    console.log('Viewing student with ID:', id);
+    alert(`Viewing student ${id} - This functionality will be implemented soon`);
+    // router.push(`/students/${id}`);
+  };
+  
+  const handleEditStudent = (id: string) => {
+    // In a real app, this would navigate to an edit page with the student ID
+    console.log('Editing student with ID:', id);
+    alert(`Editing student ${id} - This functionality will be implemented soon`);
+    // router.push(`/students/edit/${id}`);
+  };
+  
+  const handleDeleteStudent = (id: string) => {
+    // In a real app, this would call Firebase to delete the student
+    if (window.confirm('Are you sure you want to delete this student?')) {
+      console.log('Deleting student with ID:', id);
+      setStudents(students.filter(student => student.id !== id));
+    }
+  };
 
   return (
     <Layout>
@@ -82,7 +106,10 @@ export default function Students() {
           </div>
           
           <div>
-            <button className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md">
+            <button 
+              className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md"
+              onClick={() => router.push('/students/register')}
+            >
               Register New Student
             </button>
           </div>
@@ -151,13 +178,22 @@ export default function Students() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                        <button 
+                          className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          onClick={() => handleViewStudent(student.id)}
+                        >
                           View
                         </button>
-                        <button className="text-blue-600 hover:text-blue-900 mr-3">
+                        <button 
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          onClick={() => handleEditStudent(student.id)}
+                        >
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button 
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDeleteStudent(student.id)}
+                        >
                           Delete
                         </button>
                       </td>
