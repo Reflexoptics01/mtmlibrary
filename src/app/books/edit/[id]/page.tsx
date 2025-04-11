@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../../components/layout/Layout';
+import { getBookById, updateBook } from '@/lib/firebase/db';
 
 interface Book {
   id: string;
@@ -11,14 +12,13 @@ interface Book {
   isbn: string;
   category: string;
   publisher: string;
-  publicationYear: string;
+  publicationYear: number | null;
   totalCopies: number;
   availableCopies: number;
   description: string;
 }
 
-// Using a simpler approach to avoid type conflicts
-export default function EditBook({ params }: any) {
+export default function EditBook({ params }: { params: { id: string } }) {
   const [book, setBook] = useState<Book>({
     id: '',
     title: '',
@@ -26,7 +26,7 @@ export default function EditBook({ params }: any) {
     isbn: '',
     category: '',
     publisher: '',
-    publicationYear: '',
+    publicationYear: null,
     totalCopies: 0,
     availableCopies: 0,
     description: ''
@@ -40,28 +40,24 @@ export default function EditBook({ params }: any) {
   const { id } = params;
 
   useEffect(() => {
-    // This would normally fetch book data from Firebase
-    // For now, use mock data
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const mockBook: Book = {
-        id,
-        title: 'Faizane Sunnat',
-        author: 'Ameer e Ahle Sunnat',
-        isbn: '9781234567897',
-        category: 'Islamic',
-        publisher: 'Dawat-e-Islami',
-        publicationYear: '2018',
-        totalCopies: 5,
-        availableCopies: 3,
-        description: 'A comprehensive guide to Sunnah practices.'
-      };
-      
-      setBook(mockBook);
-      setLoading(false);
-    }, 500);
+    const fetchBook = async () => {
+      try {
+        setLoading(true);
+        const bookData = await getBookById(id);
+        if (bookData) {
+          setBook(bookData as Book);
+        } else {
+          setError('Book not found');
+        }
+      } catch (err) {
+        console.error('Error fetching book:', err);
+        setError('Failed to load book details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
   }, [id]);
 
   const categories = [
@@ -125,13 +121,9 @@ export default function EditBook({ params }: any) {
     setSuccess('');
     
     try {
-      // This would normally update the book data in Firebase
-      // For now, just simulate an API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
+      await updateBook(id, book);
       setSuccess('Book updated successfully');
       
-      // Redirect to book details page after a brief delay
       setTimeout(() => {
         router.push(`/books`);
       }, 1500);
@@ -295,7 +287,7 @@ export default function EditBook({ params }: any) {
                     name="publicationYear"
                     type="number"
                     placeholder="Publication Year"
-                    value={book.publicationYear}
+                    value={book.publicationYear || ''}
                     onChange={handleInputChange}
                     min="1900"
                     max={new Date().getFullYear().toString()}
