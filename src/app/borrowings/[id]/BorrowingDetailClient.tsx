@@ -59,10 +59,15 @@ export default function BorrowingDetailClient({ params }: Props) {
   
   useEffect(() => {
     const fetchBorrowingDetail = async () => {
-      if (!params.id) return;
+      if (!params.id || typeof params.id !== 'string') {
+        setError('Invalid borrowing ID');
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
+        setError('');
         const borrowingData = await getBorrowingById(params.id);
         
         if (borrowingData) {
@@ -72,14 +77,16 @@ export default function BorrowingDetailClient({ params }: Props) {
         }
       } catch (err) {
         console.error('Error fetching borrowing details:', err);
-        setError('Failed to load borrowing details');
+        setError('Failed to load borrowing details. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
     
-    fetchBorrowingDetail();
-  }, [params.id]);
+    if (!authLoading && user) {
+      fetchBorrowingDetail();
+    }
+  }, [params.id, authLoading, user]);
   
   const handleReturnBook = async () => {
     if (!borrowing) return;
