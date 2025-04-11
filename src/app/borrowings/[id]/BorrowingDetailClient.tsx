@@ -59,7 +59,7 @@ export default function BorrowingDetailClient({ params }: Props) {
   
   useEffect(() => {
     const fetchBorrowingDetail = async () => {
-      if (!params.id || !user) return;
+      if (!params.id) return;
       
       try {
         setLoading(true);
@@ -70,16 +70,16 @@ export default function BorrowingDetailClient({ params }: Props) {
         } else {
           setError('Borrowing record not found');
         }
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching borrowing details:', err);
         setError('Failed to load borrowing details');
+      } finally {
         setLoading(false);
       }
     };
     
     fetchBorrowingDetail();
-  }, [params.id, user]);
+  }, [params.id]);
   
   const handleReturnBook = async () => {
     if (!borrowing) return;
