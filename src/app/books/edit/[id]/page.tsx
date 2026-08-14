@@ -1,24 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Layout from '../../../../components/layout/Layout';
-import { getBookById, updateBook } from '@/lib/firebase/db';
+import { useParams, useRouter } from 'next/navigation';
+import Layout from '@/components/layout/Layout';
+import StaffGate from '@/components/StaffGate';
+import { getBookById, updateBook } from '@/lib/db';
+import { BOOK_CATEGORIES, type Book } from '@/lib/types';
 
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  category: string;
-  publisher: string;
-  publicationYear: number | null;
-  totalCopies: number;
-  availableCopies: number;
-  description: string;
-}
-
-export default function EditBook({ params }: { params: { id: string } }) {
+export default function EditBook() {
   const [book, setBook] = useState<Book>({
     id: '',
     title: '',
@@ -29,7 +18,8 @@ export default function EditBook({ params }: { params: { id: string } }) {
     publicationYear: null,
     totalCopies: 0,
     availableCopies: 0,
-    description: ''
+    description: '',
+    addedDate: '',
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +27,7 @@ export default function EditBook({ params }: { params: { id: string } }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
-  const { id } = params;
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -60,23 +50,7 @@ export default function EditBook({ params }: { params: { id: string } }) {
     fetchBook();
   }, [id]);
 
-  const categories = [
-    'Fiction',
-    'Non-fiction',
-    'Science',
-    'History',
-    'Biography',
-    'Religion',
-    'Philosophy',
-    'Self-help',
-    'Reference',
-    'Islamic Studies',
-    'Islamic',
-    'Arabic Literature',
-    "Children's Books",
-    'Textbooks',
-    'Other'
-  ];
+  const categories = BOOK_CATEGORIES;
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -156,15 +130,18 @@ export default function EditBook({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
+      <StaffGate>
       <Layout>
         <div className="text-center py-8">
           <p className="text-gray-600">Loading book details...</p>
         </div>
       </Layout>
+      </StaffGate>
     );
   }
 
   return (
+    <StaffGate>
     <Layout>
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
@@ -361,5 +338,6 @@ export default function EditBook({ params }: { params: { id: string } }) {
         </div>
       </div>
     </Layout>
+    </StaffGate>
   );
 } 

@@ -5,8 +5,8 @@ import ClientLayout from './client-layout';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Madina Library',
-  description: 'Madersatul Madina Faizane Gareeb Nawaz Gangavathi Library Management',
+  title: 'Maktaba',
+  description: 'Open-source library management for Muslim institutes, schools, and madrasas',
 };
 
 export default function RootLayout({

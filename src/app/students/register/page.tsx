@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Layout from '../../../components/layout/Layout';
-import { addStudent } from '@/lib/firebase/db';
+import Layout from '@/components/layout/Layout';
+import StaffGate from '@/components/StaffGate';
+import { addStudent } from '@/lib/db';
 
 export default function RegisterStudent() {
   const [name, setName] = useState('');
@@ -22,20 +23,14 @@ export default function RegisterStudent() {
     setLoading(true);
 
     try {
-      // Create new student object
-      const newStudent = {
+      await addStudent({
         name,
         rollNumber,
         grade,
         fatherName,
         contactNumber,
         address,
-        borrowedBooks: 0,
-        finesDue: 0
-      };
-      
-      // Add to Firestore
-      await addStudent(newStudent);
+      });
       
       // Redirect back to students list
       router.push('/students');
@@ -47,6 +42,7 @@ export default function RegisterStudent() {
   };
 
   return (
+    <StaffGate>
     <Layout>
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
@@ -172,5 +168,6 @@ export default function RegisterStudent() {
         </div>
       </div>
     </Layout>
+    </StaffGate>
   );
 } 

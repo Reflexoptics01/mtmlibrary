@@ -24,10 +24,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
               <p className="text-center md:text-left">
-                &copy; {year} Madersatul Madina Faizane Gareeb Nawaz Gangavathi
+                &copy; {year} Maktaba
               </p>
               <p className="text-center md:text-left text-sm">
-                Library Management System
+                Open-source library management for Muslim institutes
               </p>
             </div>
             <div className="flex space-x-4">

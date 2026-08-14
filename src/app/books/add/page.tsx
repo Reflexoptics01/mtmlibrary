@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Layout from '../../../components/layout/Layout';
-import { addBook } from '@/lib/firebase/db';
+import Layout from '@/components/layout/Layout';
+import StaffGate from '@/components/StaffGate';
+import { addBook } from '@/lib/db';
+import { BOOK_CATEGORIES } from '@/lib/types';
 
 export default function AddBook() {
   const [title, setTitle] = useState('');
@@ -23,57 +25,36 @@ export default function AddBook() {
     setError('');
     setLoading(true);
 
+    const copies = parseInt(quantity, 10);
+    if (!Number.isFinite(copies) || copies < 1) {
+      setError('Quantity must be at least 1');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Create new book object
-      const newBook = {
+      await addBook({
         title,
         author,
         isbn,
         category,
         publisher,
-        publicationYear: publicationYear ? parseInt(publicationYear) : null,
-        totalCopies: parseInt(quantity),
-        availableCopies: parseInt(quantity),
+        publicationYear: publicationYear ? parseInt(publicationYear, 10) : null,
+        totalCopies: copies,
         description,
-        addedDate: new Date().toISOString()
-      };
-      
-      // Add to Firestore
-      await addBook(newBook);
+      });
       
       // Redirect back to books list
       router.push('/books');
-    } catch (err: any) {
-      setError(err.message || 'Failed to add book');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to add book');
     } finally {
       setLoading(false);
     }
   };
 
-  const categories = [
-    'Islamic',
-    'Islamic Fiqh',
-    'Tafseer',
-    'Hadith',
-    'Usul al Fiqh',
-    'Tasawuff',
-    'Islamic Studies',
-    'Arabic Literature',
-    'Fiction',
-    'Non-fiction',
-    'Science',
-    'History',
-    'Biography',
-    'Religion',
-    'Philosophy',
-    'Self-help',
-    'Reference',
-    'Children\'s Books',
-    'Textbooks',
-    'Other'
-  ];
-
   return (
+    <StaffGate>
     <Layout>
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
@@ -152,7 +133,7 @@ export default function AddBook() {
                     required
                   >
                     <option value="">Select a category</option>
-                    {categories.map((cat) => (
+                    {BOOK_CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
@@ -233,5 +214,6 @@ export default function AddBook() {
         </div>
       </div>
     </Layout>
+    </StaffGate>
   );
 } 

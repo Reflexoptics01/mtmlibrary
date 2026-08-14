@@ -1,116 +1,47 @@
-# Madersatul Madina Library Management System
+# Maktaba
 
-This is a comprehensive library management system for Madersatul Madina Faizane Gareeb Nawaz Gangavathi Dawate Islami India branch. The system includes library management features and a section for uploading and viewing monthly Farameen-e-Attar publications.
+Open-source library management for Muslim institutes, schools, and madrasas.
+
+Each institute hosts **their own** [Supabase](https://supabase.com) project. This repository does not include an admin account, API keys, a Firebase project, or any shared backend.
+
+Do not look for or reuse an old Firebase app — Maktaba talks only to the Supabase URL and anon key you put in `.env.local`.
 
 ## Features
 
-- Book management (add, edit, delete, search)
-- Student registration and management
-- Borrowing and return tracking
-- Fine calculation system
-- Farameen-e-Attar publication management (audio and booklet formats)
-- User authentication and authorization
-- Responsive design for all devices
+- Book catalog with copy counts
+- Student / talib records
+- Atomic issue and return (fines calculated in the database)
+- Publications (PDF + optional audio)
+- First signup on a new project becomes admin; later signups stay pending until approved
+- Row Level Security on every table
 
-## Technologies Used
+## Setup
 
-- Next.js with TypeScript
-- Tailwind CSS for styling
-- Firebase Authentication
-- Firebase Firestore for database
-- Firebase Storage for file storage
+1. Create a **new** Supabase project for your institute.
+2. Enable Email auth (Authentication → Providers → Email).
+3. In the SQL editor, paste and run [`supabase/schema.sql`](supabase/schema.sql).
+4. Copy `.env.example` to `.env.local` and add **your** project URL and anon key only:
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 14.x or higher
-- npm or yarn
-- Firebase account
-
-### Installation
-
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/madina-library.git
-cd madina-library
+```
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR-REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 ```
 
-2. Install dependencies
+Never put the `service_role` key in this app.
+
+5. Install and run:
+
 ```bash
 npm install
-# or
-yarn install
-```
-
-3. Set up environment variables
-Create a `.env.local` file in the root directory with the following variables:
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
-
-4. Run the development server
-```bash
 npm run dev
-# or
-yarn dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application
+6. Open the site, go to **Create staff account**, and register the first user. That person becomes admin. Later staff must be approved under **Staff**.
 
-## Deployment
+## Deploy
 
-The application is deployed using Vercel. You can access it at the following URL:
-[https://](https://)
-
-## Initial Login Credentials
-
-- Email: 
-- Password: (provided during setup)
-
-## Usage
-
-### Library Management
-
-1. **Books Management**
-   - Add new books with details like title, author, category, etc.
-   - View all books in the library
-   - Search and filter books
-   - Edit or delete book information
-
-2. **Student Management**
-   - Register new students
-   - View all registered students
-   - Search students by name or contact
-   - Edit or delete student information
-
-3. **Borrowing Management**
-   - Record book borrowings
-   - Track due dates
-   - Process returns
-   - Calculate and collect fines for late returns
-
-### Farameen-e-Attar Management
-
-1. **Upload Publications**
-   - Upload monthly Risala in both booklet (PDF) and audio formats
-   - Add metadata like title, month, year, language, etc.
-
-2. **View Publications**
-   - Browse all uploaded publications
-   - Filter by year, month, or language
-   - Download booklets or listen to audio recordings
+See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- Dawate Islami for providing the logo and organizational information
-- All contributors to the open-source libraries used in this project
+MIT. See [LICENSE](LICENSE).

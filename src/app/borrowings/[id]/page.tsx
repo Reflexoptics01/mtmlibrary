@@ -1,13 +1,10 @@
 import BorrowingDetailClient from './BorrowingDetailClient';
 
 interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
+  params: Promise<{ id: string }>;
 }
 
-export default function BorrowingDetail({ params, searchParams }: PageProps) {
-  return <BorrowingDetailClient params={params} />;
+export default async function BorrowingDetail({ params }: PageProps) {
+  const { id } = await params;
+  return <BorrowingDetailClient id={id} />;
 }
-

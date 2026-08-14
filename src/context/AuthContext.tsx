@@ -1,98 +1,143 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  User,
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  UserCredential
-} from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { getSupabase, hasSupabaseConfig } from '@/lib/supabase';
+import { getProfile } from '@/lib/db';
+import type { Profile } from '@/lib/types';
 
-// Define the shape of the auth context
 interface AuthContextType {
   user: User | null;
+  profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<UserCredential>;
-  login: (email: string, password: string) => Promise<UserCredential>;
+  configError: string | null;
+  isStaff: boolean;
+  isAdmin: boolean;
+  isPending: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
-// Create the auth context with a default value
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  profile: null,
   loading: true,
-  signUp: async () => {
-    throw new Error('Auth context not initialized');
-  },
+  configError: null,
+  isStaff: false,
+  isAdmin: false,
+  isPending: false,
   login: async () => {
-    throw new Error('Auth context not initialized');
+    throw new Error('Auth not ready');
+  },
+  signUp: async () => {
+    throw new Error('Auth not ready');
   },
   logout: async () => {
-    throw new Error('Auth context not initialized');
+    throw new Error('Auth not ready');
   },
-  resetPassword: async () => {
-    throw new Error('Auth context not initialized');
-  },
+  refreshProfile: async () => {},
 });
 
-// Custom hook to use the auth context
 export const useAuth = () => useContext(AuthContext);
 
-// Provider component that wraps the app and makes auth object available
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Initialize state with consistent values for both server and client
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // This effect only runs on the client after the component mounts
+  const [configError, setConfigError] = useState<string | null>(null);
+
+  const loadProfile = async (nextUser: User | null) => {
+    if (!nextUser) {
+      setProfile(null);
+      return;
+    }
+    try {
+      const data = await getProfile(nextUser.id);
+      setProfile(data);
+    } catch (err) {
+      console.error('Failed to load profile', err);
+      setProfile(null);
+    }
+  };
+
   useEffect(() => {
-    // Subscribe to auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    if (!hasSupabaseConfig()) {
+      setConfigError('Supabase is not configured. Copy .env.example to .env.local and add your project URL and anon key.');
       setLoading(false);
+      return;
+    }
+
+    const supabase = getSupabase();
+
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
+      const sessionUser = data.session?.user ?? null;
+      setUser(sessionUser);
+      await loadProfile(sessionUser);
+      setLoading(false);
+    };
+
+    void init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      void loadProfile(sessionUser);
     });
 
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  // Sign up function
-  const signUp = (email: string, password: string) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const login = async (email: string, password: string) => {
+    const { error } = await getSupabase().auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
-  // Sign in function
-  const login = (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const signUp = async (email: string, password: string, fullName: string) => {
+    const { error } = await getSupabase().auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    if (error) throw error;
   };
 
-  // Sign out function
-  const logout = () => {
-    return signOut(auth);
+  const logout = async () => {
+    const { error } = await getSupabase().auth.signOut();
+    if (error) throw error;
+    setUser(null);
+    setProfile(null);
   };
 
-  // Reset password function
-  const resetPassword = (email: string) => {
-    return sendPasswordResetEmail(auth, email);
+  const refreshProfile = async () => {
+    await loadProfile(user);
   };
 
-  // Context values to be provided
-  const value = {
-    user,
-    loading,
-    signUp,
-    login,
-    logout,
-    resetPassword,
-  };
+  const role = profile?.role;
+  const isStaff = role === 'admin' || role === 'librarian';
+  const isAdmin = role === 'admin';
+  const isPending = Boolean(user && profile && profile.role === 'pending');
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        configError,
+        isStaff,
+        isAdmin,
+        isPending,
+        login,
+        signUp,
+        logout,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

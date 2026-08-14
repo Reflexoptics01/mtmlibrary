@@ -1,7 +1,8 @@
 {
-  "name": "madina_library",
+  "name": "maktaba",
   "version": "0.1.0",
   "private": true,
+  "description": "Open-source library management for Muslim institutes, schools, and madrasas",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -9,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "firebase": "^11.6.0",
+    "@supabase/supabase-js": "^2.112.3",
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

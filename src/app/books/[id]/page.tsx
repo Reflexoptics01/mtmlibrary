@@ -1,30 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Layout from '../../../components/layout/Layout';
-import { getBookById } from '@/lib/firebase/db';
+import { useParams, useRouter } from 'next/navigation';
+import Layout from '@/components/layout/Layout';
+import StaffGate from '@/components/StaffGate';
+import { getBookById } from '@/lib/db';
+import type { Book } from '@/lib/types';
 
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  category: string;
-  publisher: string;
-  publicationYear: number | null;
-  totalCopies: number;
-  availableCopies: number;
-  description: string;
-  addedDate: string;
-}
-
-export default function BookDetail({ params }: { params: { id: string } }) {
+export default function BookDetail() {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
-  const { id } = params;
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -32,10 +20,7 @@ export default function BookDetail({ params }: { params: { id: string } }) {
         setLoading(true);
         const bookData = await getBookById(id);
         if (bookData) {
-          setBook({
-            ...bookData,
-            publicationYear: bookData.publicationYear?.toString() || null
-          } as Book);
+          setBook(bookData);
         } else {
           setError('Book not found');
         }
@@ -52,31 +37,37 @@ export default function BookDetail({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
+      <StaffGate>
       <Layout>
         <div className="text-center py-8">
           <p className="text-gray-600">Loading book details...</p>
         </div>
       </Layout>
+      </StaffGate>
     );
   }
 
   if (error) {
     return (
+      <StaffGate>
       <Layout>
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       </Layout>
+      </StaffGate>
     );
   }
 
   if (!book) {
     return (
+      <StaffGate>
       <Layout>
         <div className="text-center py-8">
           <p className="text-gray-600">Book not found</p>
         </div>
       </Layout>
+      </StaffGate>
     );
   }
 

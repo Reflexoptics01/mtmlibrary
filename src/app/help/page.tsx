@@ -1,7 +1,6 @@
 'use client';
 
 import Layout from '../../components/layout/Layout';
-import Link from 'next/link';
 
 export default function Help() {
   return (
@@ -11,16 +10,13 @@ export default function Help() {
         
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <div className="p-6">
-            <h2 className="text-2xl font-semibold text-green-700 mb-4">Contact Information</h2>
+            <h2 className="text-2xl font-semibold text-green-700 mb-4">Get support</h2>
             <div className="bg-green-50 p-6 rounded-lg mb-6">
               <p className="text-gray-700 mb-2">
-                For any assistance, bug reports, or inquiries about the library management system, please contact:
+                For assistance, bug reports, or questions about Maktaba, open an issue on the project repository or contact your institute administrator.
               </p>
-              <p className="text-xl font-semibold text-green-800 mb-1">
-                Email: <a href="mailto:" className="text-blue-600 hover:underline"></a>
-              </p>
-              <p className="text-gray-600 italic">
-                We aim to respond to all inquiries within 48 hours, In sha Allah.
+              <p className="text-gray-600 italic mt-2">
+                We aim to respond to community issues promptly, in sha Allah.
               </p>
             </div>
             
@@ -77,14 +73,14 @@ export default function Help() {
               <div>
                 <h3 className="text-lg font-semibold text-green-800 mb-2">Is this system available in other languages?</h3>
                 <p className="text-gray-700">
-                  Currently, the system is available in English. If you require support for additional languages, please contact us via the email provided above.
+                  Currently the interface is English. Urdu and Arabic would help many madrasas — contributions are welcome.
                 </p>
               </div>
               
               <div>
                 <h3 className="text-lg font-semibold text-green-800 mb-2">Can I use this system for my Islamic institution?</h3>
                 <p className="text-gray-700">
-                  Yes! This system is open-sourced and freely available for use by any Islamic institution. For assistance with implementation or customization, please contact us.
+                  Yes. Maktaba is free and open source (MIT). Any masjid, school, or madrasa can run its own copy. See the README and DEPLOYMENT.md to get started.
                 </p>
               </div>
             </div>
