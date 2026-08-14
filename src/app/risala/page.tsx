@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { deletePublication, getAllPublications } from '@/lib/db';
 import { publicationYears, type Publication } from '@/lib/types';
+import Link from 'next/link';
 
 function PublicationsInner() {
   const [items, setItems] = useState<Publication[]>([]);
@@ -54,56 +55,64 @@ function PublicationsInner() {
 
   return (
     <Layout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-green-800 mb-6">Publications</h1>
-        <div className="flex flex-col md:flex-row justify-between mb-6 gap-2">
-          <input type="text" placeholder="Search publications..." className="px-4 py-2 border rounded-md w-full md:w-80" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          <div className="flex space-x-2">
-            <select className="px-4 py-2 border rounded-md" value={yearFilter} onChange={(e) => setYearFilter(e.target.value ? parseInt(e.target.value, 10) : '')}>
+      <div className="space-y-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-green-700">Community reading</p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">Publications</h1>
+            <p className="mt-2 max-w-2xl text-slate-600">Browse risala, magazines, booklets, and audio lessons shared by your institute.</p>
+          </div>
+          {isStaff && <button className="btn-primary self-start sm:self-auto" onClick={() => router.push('/risala/upload')}>Upload publication</button>}
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_10rem_12rem]">
+            <label className="sr-only" htmlFor="publication-search">Search publications</label>
+            <input id="publication-search" type="search" placeholder="Search by title or description" aria-label="Search publications" className="w-full rounded-lg border border-slate-300 px-4 py-2.5 shadow-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <label className="sr-only" htmlFor="publication-year">Filter by year</label>
+            <select id="publication-year" aria-label="Filter by year" className="rounded-lg border border-slate-300 px-3 py-2.5 shadow-sm" value={yearFilter} onChange={(e) => setYearFilter(e.target.value ? parseInt(e.target.value, 10) : '')}>
               <option value="">All Years</option>
               {publicationYears().map((year) => <option key={year} value={year}>{year}</option>)}
             </select>
-            <select className="px-4 py-2 border rounded-md" value={languageFilter} onChange={(e) => setLanguageFilter(e.target.value)}>
+            <label className="sr-only" htmlFor="publication-language">Filter by language</label>
+            <select id="publication-language" aria-label="Filter by language" className="rounded-lg border border-slate-300 px-3 py-2.5 shadow-sm" value={languageFilter} onChange={(e) => setLanguageFilter(e.target.value)}>
               <option value="">All Languages</option>
               {languages.map((language) => <option key={language} value={language}>{language}</option>)}
             </select>
-            {isStaff && (
-              <button className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md" onClick={() => router.push('/risala/upload')}>
-                Upload Publication
-              </button>
-            )}
           </div>
         </div>
 
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+        {error && <div role="alert" className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800 sm:flex-row sm:items-center sm:justify-between"><span>{error}</span><button className="self-start rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium hover:bg-red-100" onClick={() => void load()}>Try again</button></div>}
         {loading ? (
-          <p className="text-center text-gray-600 py-8">Loading publications...</p>
+          <p role="status" className="rounded-xl border border-slate-200 bg-white px-4 py-12 text-center text-slate-600">Loading publications…</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.length === 0 ? (
-              <p className="col-span-full text-center text-gray-600 py-8">No publications yet</p>
+              <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+                <p className="font-semibold text-slate-800">{items.length === 0 ? 'No publications yet' : 'No matching publications'}</p>
+                <p className="mt-2 text-sm text-slate-500">{items.length === 0 ? 'Published material will appear here when your institute shares it.' : 'Try clearing a filter or searching with a different phrase.'}</p>
+              </div>
             ) : (
               filtered.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-md p-4">
+                <article key={item.id} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                   <div className="flex justify-between items-start">
                     <h2 className="text-xl font-semibold text-green-800 mb-2">
-                      <button className="text-left hover:underline" onClick={() => router.push(`/risala/${item.id}`)}>{item.title}</button>
+                      <Link className="text-left hover:underline" href={`/risala/${item.id}`}>{item.title}</Link>
                     </h2>
                     <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{item.language}</span>
                   </div>
-                  <p className="text-gray-600 mb-2">{item.month} {item.year}</p>
-                  <p className="text-gray-700 mb-4 line-clamp-3">{item.description}</p>
-                  <div className="flex justify-between text-sm text-gray-500 mb-4">
+                  <p className="mb-2 text-sm text-slate-500">{item.month} {item.year}</p>
+                  <p className="mb-5 line-clamp-3 text-slate-700">{item.description}</p>
+                  <div className="mb-5 flex justify-between text-sm text-slate-500">
                     <span>{item.downloadCount} downloads</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {item.bookletUrl && <a href={item.bookletUrl} target="_blank" rel="noreferrer" className="bg-green-700 text-white px-3 py-1 rounded-md text-sm">Download</a>}
-                    {item.audioUrl && <a href={item.audioUrl} target="_blank" rel="noreferrer" className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm">Audio</a>}
+                  <div className="mt-auto flex flex-wrap gap-2">
+                    {item.bookletUrl && <a href={item.bookletUrl} target="_blank" rel="noreferrer" className="btn-primary text-sm">Download</a>}
+                    {item.audioUrl && <a href={item.audioUrl} target="_blank" rel="noreferrer" className="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">Listen</a>}
                     {isStaff && (
-                      <button onClick={() => handleDelete(item.id)} className="bg-red-600 text-white px-3 py-1 rounded-md text-sm">Delete</button>
+                      <button onClick={() => handleDelete(item.id)} className="rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700">Delete</button>
                     )}
                   </div>
-                </div>
+                </article>
               ))
             )}
           </div>

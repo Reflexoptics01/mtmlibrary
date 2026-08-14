@@ -29,7 +29,7 @@ export default function Navbar() {
 
   // Get the classes for the navigation link based on active state
   const getLinkClasses = (path: string) => {
-    return `px-3 py-2 rounded-md ${
+    return `px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
       isActive(path) 
         ? 'bg-green-700 text-white' 
         : 'hover:bg-green-700'
@@ -38,7 +38,7 @@ export default function Navbar() {
 
   // Get the classes for the mobile navigation link based on active state
   const getMobileLinkClasses = (path: string) => {
-    return `block px-3 py-2 rounded-md ${
+    return `block px-3 py-2 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
       isActive(path) 
         ? 'bg-green-700 text-white' 
         : 'hover:bg-green-700'
@@ -46,7 +46,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-green-800 text-white shadow-md">
+    <nav aria-label="Primary navigation" className="bg-green-800 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -111,7 +111,10 @@ export default function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-green-700 focus:outline-none"
+              aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-navigation"
+              className="inline-flex items-center justify-center rounded-md p-2 text-white transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             >
               <svg
                 className="h-6 w-6"
@@ -133,7 +136,7 @@ export default function Navbar() {
       
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden">
+        <div id="mobile-navigation" className="border-t border-white/10 md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link href="/books" className={getMobileLinkClasses('/books')}>
               Books
