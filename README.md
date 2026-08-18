@@ -10,7 +10,8 @@ Do not look for or reuse an old Firebase app — Maktaba talks only to the Supab
 
 - Book catalog with copy counts
 - Student / talib records
-- Atomic issue and return (fines calculated in the database)
+- Atomic issue, return, and renewal (fines calculated in the database)
+- Admin-configurable library rules: name, borrow limits, fine rates, currency
 - Publications (PDF + optional audio)
 - First signup on a new project becomes admin; later signups stay pending until approved
 - Row Level Security on every table

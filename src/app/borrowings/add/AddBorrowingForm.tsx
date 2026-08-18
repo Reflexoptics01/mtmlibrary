@@ -115,7 +115,7 @@ export default function AddBorrowingForm() {
                     <p className="mt-2 text-red-600 text-sm">Unpaid fines: {settings?.currencySymbol}{selectedStudent.finesDue}</p>
                   )}
                   {selectedStudent && settings && selectedStudent.borrowedBooks >= settings.maxBooksPerStudent && (
-                    <p className="mt-2 text-orange-600 text-sm">This student is at the borrow limit ({settings.maxBooksPerStudent}).</p>
+                    <p className="mt-2 text-amber-600 text-sm">This student is at the borrow limit ({settings.maxBooksPerStudent}).</p>
                   )}
                 </div>
                 <div className="mb-6">

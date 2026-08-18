@@ -60,22 +60,22 @@ export default function Dashboard() {
           <div className="bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold text-green-700 mb-4">Quick Stats</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-200">
+              <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
                 <p className="text-gray-500 text-sm">Total Books</p>
-                <h3 className="text-3xl font-bold text-blue-700 mt-2">{stats.totalBooks}</h3>
+                <h3 className="text-3xl font-bold text-green-700 mt-2">{stats.totalBooks}</h3>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg shadow border border-purple-200">
+              <div className="bg-green-100 p-4 rounded-lg shadow border border-green-300">
                 <p className="text-gray-500 text-sm">Registered Students</p>
-                <h3 className="text-3xl font-bold text-purple-700 mt-2">{stats.registeredStudents}</h3>
-              </div>
-              <div className="bg-amber-50 p-4 rounded-lg shadow border border-amber-200">
-                <p className="text-gray-500 text-sm">Current Borrowings</p>
-                <h3 className="text-3xl font-bold text-amber-700 mt-2">{stats.currentBorrowings}</h3>
-                <span className="text-red-500 text-sm">{stats.overdueItems} overdue</span>
+                <h3 className="text-3xl font-bold text-green-800 mt-2">{stats.registeredStudents}</h3>
               </div>
               <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
+                <p className="text-gray-500 text-sm">Current Borrowings</p>
+                <h3 className="text-3xl font-bold text-green-700 mt-2">{stats.currentBorrowings}</h3>
+                <span className="text-red-500 text-sm">{stats.overdueItems} overdue</span>
+              </div>
+              <div className="bg-green-100 p-4 rounded-lg shadow border border-green-300">
                 <p className="text-gray-500 text-sm">Publications</p>
-                <h3 className="text-3xl font-bold text-green-700 mt-2">{stats.publications}</h3>
+                <h3 className="text-3xl font-bold text-green-800 mt-2">{stats.publications}</h3>
               </div>
             </div>
           </div>
@@ -83,13 +83,13 @@ export default function Dashboard() {
           <div className="bg-white shadow-md rounded-lg p-6">
             <h2 className="text-2xl font-semibold text-green-700 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button onClick={() => router.push('/books/add')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md">
+              <button onClick={() => router.push('/books/add')} className="bg-green-700 hover:bg-green-800 text-white px-4 py-3 rounded-md">
                 Add New Book
               </button>
-              <button onClick={() => router.push('/students/register')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-md">
+              <button onClick={() => router.push('/students/register')} className="bg-green-700 hover:bg-green-800 text-white px-4 py-3 rounded-md">
                 Register New Student
               </button>
-              <button onClick={() => router.push('/risala/upload')} className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-3 rounded-md">
+              <button onClick={() => router.push('/risala/upload')} className="bg-green-700 hover:bg-green-800 text-white px-4 py-3 rounded-md">
                 Upload Publication
               </button>
             </div>

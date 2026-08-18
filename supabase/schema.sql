@@ -358,6 +358,43 @@ begin
 end;
 $$;
 
+-- Renew an active loan: push the due date out by p_days (atomic, staff only).
+create or replace function private.extend_borrowing(p_borrowing_id uuid, p_days int)
+returns date
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_loan public.borrowings%rowtype;
+  v_new_due date;
+begin
+  if not private.is_staff() then
+    raise exception 'Not allowed';
+  end if;
+
+  if p_days is null or p_days < 1 or p_days > 60 then
+    raise exception 'Extension must be between 1 and 60 days';
+  end if;
+
+  select * into v_loan from public.borrowings where id = p_borrowing_id for update;
+  if not found then
+    raise exception 'Borrowing not found';
+  end if;
+  if v_loan.status in ('Returned', 'Lost') then
+    raise exception 'This loan is already closed';
+  end if;
+
+  v_new_due := v_loan.due_date + p_days;
+
+  update public.borrowings
+  set due_date = v_new_due
+  where id = v_loan.id;
+
+  return v_new_due;
+end;
+$$;
+
 create or replace function private.increment_download(p_publication_id uuid)
 returns void
 language plpgsql
@@ -396,6 +433,12 @@ language sql
 security invoker
 as $$ select private.pay_student_fine(p_student_id, p_amount); $$;
 
+create or replace function public.extend_borrowing(p_borrowing_id uuid, p_days int)
+returns date
+language sql
+security invoker
+as $$ select private.extend_borrowing(p_borrowing_id, p_days); $$;
+
 create or replace function public.increment_download(p_publication_id uuid)
 returns void
 language plpgsql
@@ -413,12 +456,14 @@ grant execute on function private.issue_book(uuid, uuid, int) to authenticated;
 grant execute on function private.return_book(uuid) to authenticated;
 grant execute on function private.mark_book_lost(uuid) to authenticated;
 grant execute on function private.pay_student_fine(uuid, numeric) to authenticated;
+grant execute on function private.extend_borrowing(uuid, int) to authenticated;
 grant execute on function private.increment_download(uuid) to anon, authenticated;
 
 grant execute on function public.issue_book(uuid, uuid, int) to authenticated;
 grant execute on function public.return_book(uuid) to authenticated;
 grant execute on function public.mark_book_lost(uuid) to authenticated;
 grant execute on function public.pay_student_fine(uuid, numeric) to authenticated;
+grant execute on function public.extend_borrowing(uuid, int) to authenticated;
 grant execute on function public.increment_download(uuid) to anon, authenticated;
 
 -- ---------------------------------------------------------------------------

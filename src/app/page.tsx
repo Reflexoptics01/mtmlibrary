@@ -74,19 +74,19 @@ export default function Home() {
         <div className="bg-white shadow-md rounded-lg p-6">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">Quick Stats</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-200">
-              <h3 className="text-xl font-semibold text-blue-800 mb-2">Total Books</h3>
-              <p className="text-3xl font-bold text-blue-600">{isStaff ? stats.totalBooks : '—'}</p>
+            <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
+              <h3 className="text-xl font-semibold text-green-800 mb-2">Total Books</h3>
+              <p className="text-3xl font-bold text-green-600">{isStaff ? stats.totalBooks : '—'}</p>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg shadow border border-purple-200">
-              <h3 className="text-xl font-semibold text-purple-800 mb-2">Registered Students</h3>
-              <p className="text-3xl font-bold text-purple-600">{isStaff ? stats.registeredStudents : '—'}</p>
+            <div className="bg-green-100 p-4 rounded-lg shadow border border-green-300">
+              <h3 className="text-xl font-semibold text-green-900 mb-2">Registered Students</h3>
+              <p className="text-3xl font-bold text-green-700">{isStaff ? stats.registeredStudents : '—'}</p>
             </div>
-            <div className="bg-amber-50 p-4 rounded-lg shadow border border-amber-200">
-              <h3 className="text-xl font-semibold text-amber-800 mb-2">
+            <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
                 {isStaff ? 'Active Borrowings' : 'Publications'}
               </h3>
-              <p className="text-3xl font-bold text-amber-600">
+              <p className="text-3xl font-bold text-green-600">
                 {isStaff ? stats.currentBorrowings : stats.publications}
               </p>
             </div>

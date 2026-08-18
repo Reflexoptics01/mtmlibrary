@@ -98,8 +98,8 @@ export default function Students() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            <button className="text-blue-600 mr-3" onClick={() => router.push(`/students/${student.id}`)}>View</button>
-                            <button className="text-indigo-600 mr-3" onClick={() => router.push(`/students/edit/${student.id}`)}>Edit</button>
+                            <button className="text-green-600 mr-3" onClick={() => router.push(`/students/${student.id}`)}>View</button>
+                            <button className="text-green-700 mr-3" onClick={() => router.push(`/students/edit/${student.id}`)}>Edit</button>
                             <button className="text-red-600" onClick={() => handleDeleteStudent(student.id)}>Delete</button>
                           </td>
                         </tr>

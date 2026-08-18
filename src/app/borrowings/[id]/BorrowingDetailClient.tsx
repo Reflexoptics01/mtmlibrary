@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import StaffGate from '@/components/StaffGate';
-import { getBorrowingById, getSettings, markBookLost, returnBook } from '@/lib/db';
+import { extendBorrowing, getBorrowingById, getSettings, markBookLost, returnBook } from '@/lib/db';
 import type { Borrowing, Settings } from '@/lib/types';
+import LoanStatusBadge from '@/components/LoanStatusBadge';
 
 export default function BorrowingDetailClient({ id }: { id: string }) {
   const [borrowing, setBorrowing] = useState<Borrowing | null>(null);
@@ -59,6 +60,27 @@ export default function BorrowingDetailClient({ id }: { id: string }) {
     }
   };
 
+  const handleExtend = async () => {
+    const maxDays = settings?.maxBorrowDays ?? 14;
+    const raw = window.prompt(`Extend due date by how many days? (default ${maxDays})`, String(maxDays));
+    if (raw === null) return;
+    const days = parseInt(raw, 10);
+    if (!Number.isFinite(days) || days < 1 || days > 60) {
+      setError('Enter a number of days between 1 and 60');
+      return;
+    }
+    setProcessing(true);
+    try {
+      const newDue = await extendBorrowing(id, days);
+      alert(`Due date extended to ${newDue}`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extend borrowing');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <StaffGate>
       <Layout>
@@ -79,7 +101,7 @@ export default function BorrowingDetailClient({ id }: { id: string }) {
                     <h2 className="text-2xl font-semibold text-green-700">{borrowing.bookTitle}</h2>
                     <p className="text-gray-500">Borrowed by: {borrowing.studentName}</p>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-sm font-semibold bg-gray-100">{borrowing.status}</span>
+                  <LoanStatusBadge status={borrowing.status} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -94,6 +116,7 @@ export default function BorrowingDetailClient({ id }: { id: string }) {
                 </div>
                 {(borrowing.status === 'Borrowed' || borrowing.status === 'Overdue') && (
                   <div className="flex justify-end space-x-3 mt-6">
+                    <button onClick={handleExtend} disabled={processing} className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md">Renew / Extend Due Date</button>
                     <button onClick={handleReturn} disabled={processing} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">Return Book</button>
                     <button onClick={handleLost} disabled={processing} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">Mark as Lost</button>
                   </div>

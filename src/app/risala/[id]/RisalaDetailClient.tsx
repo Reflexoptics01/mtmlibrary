@@ -68,7 +68,7 @@ export default function PublicationDetailClient({ id }: { id: string }) {
               <button onClick={() => handleDownload('booklet')} className="bg-green-700 text-white px-4 py-2 rounded-md">Download Booklet</button>
             )}
             {item.audioUrl && (
-              <button onClick={() => handleDownload('audio')} className="bg-blue-600 text-white px-4 py-2 rounded-md">Listen Audio</button>
+              <button onClick={() => handleDownload('audio')} className="bg-green-700 text-white px-4 py-2 rounded-md">Listen Audio</button>
             )}
           </div>
           {item.audioUrl && (

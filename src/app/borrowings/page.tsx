@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { useRouter } from 'next/navigation';
-import { getAllBorrowings, returnBook } from '@/lib/db';
-import type { Borrowing } from '@/lib/types';
+import { extendBorrowing, getAllBorrowings, getSettings, returnBook } from '@/lib/db';
+import type { Borrowing, Settings } from '@/lib/types';
 import StaffGate from '@/components/StaffGate';
 import { useAuth } from '@/context/AuthContext';
+import LoanStatusBadge from '@/components/LoanStatusBadge';
 
 export default function Borrowings() {
   const [borrowings, setBorrowings] = useState<Borrowing[]>([]);
@@ -14,13 +15,16 @@ export default function Borrowings() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [settings, setSettings] = useState<Settings | null>(null);
   const router = useRouter();
   const { isStaff } = useAuth();
 
   const load = async () => {
     try {
       setLoading(true);
-      setBorrowings(await getAllBorrowings());
+      const [list, settingData] = await Promise.all([getAllBorrowings(), getSettings()]);
+      setBorrowings(list);
+      setSettings(settingData);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load borrowings');
@@ -52,6 +56,24 @@ export default function Borrowings() {
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to return book');
+    }
+  };
+
+  const handleExtend = async (id: string) => {
+    const maxDays = settings?.maxBorrowDays ?? 14;
+    const raw = window.prompt(`Extend due date by how many days? (default ${maxDays})`, String(maxDays));
+    if (raw === null) return;
+    const days = parseInt(raw, 10);
+    if (!Number.isFinite(days) || days < 1 || days > 60) {
+      setError('Enter a number of days between 1 and 60');
+      return;
+    }
+    try {
+      const newDue = await extendBorrowing(id, days);
+      alert(`Due date extended to ${newDue}`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extend borrowing');
     }
   };
 
@@ -106,11 +128,14 @@ export default function Borrowings() {
                         <td className="px-6 py-4 text-gray-500">{borrowing.studentName}</td>
                         <td className="px-6 py-4 text-sm">{borrowing.borrowDate}</td>
                         <td className="px-6 py-4 text-sm">{borrowing.dueDate}</td>
-                        <td className="px-6 py-4">{borrowing.status}</td>
+                        <td className="px-6 py-4"><LoanStatusBadge status={borrowing.status} /></td>
                         <td className="px-6 py-4 text-sm">
-                          <button className="text-indigo-600 mr-3" onClick={() => router.push(`/borrowings/${borrowing.id}`)}>View</button>
+                          <button className="text-green-600 mr-3" onClick={() => router.push(`/borrowings/${borrowing.id}`)}>View</button>
                           {(borrowing.status === 'Borrowed' || borrowing.status === 'Overdue') && (
-                            <button className="text-green-600" onClick={() => handleReturnBook(borrowing.id)}>Return</button>
+                            <>
+                              <button className="text-green-600 mr-3" onClick={() => handleExtend(borrowing.id)}>Renew</button>
+                              <button className="text-green-600" onClick={() => handleReturnBook(borrowing.id)}>Return</button>
+                            </>
                           )}
                         </td>
                       </tr>

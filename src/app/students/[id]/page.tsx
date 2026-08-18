@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import StaffGate from '@/components/StaffGate';
-import { getActiveBorrowingsForStudent, getSettings, getStudentById, payStudentFine, returnBook } from '@/lib/db';
+import { extendBorrowing, getActiveBorrowingsForStudent, getSettings, getStudentById, payStudentFine, returnBook } from '@/lib/db';
 import type { Borrowing, Settings, Student } from '@/lib/types';
+import LoanStatusBadge from '@/components/LoanStatusBadge';
 
 export default function StudentDetail() {
   const [student, setStudent] = useState<Student | null>(null);
@@ -72,6 +73,24 @@ export default function StudentDetail() {
     }
   };
 
+  const handleExtend = async (loanId: string) => {
+    const maxDays = settings?.maxBorrowDays ?? 14;
+    const raw = window.prompt(`Extend due date by how many days? (default ${maxDays})`, String(maxDays));
+    if (raw === null) return;
+    const days = parseInt(raw, 10);
+    if (!Number.isFinite(days) || days < 1 || days > 60) {
+      setError('Enter a number of days between 1 and 60');
+      return;
+    }
+    try {
+      const newDue = await extendBorrowing(loanId, days);
+      alert(`Due date extended to ${newDue}`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extend borrowing');
+    }
+  };
+
   return (
     <StaffGate>
       <Layout>
@@ -84,7 +103,7 @@ export default function StudentDetail() {
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold text-green-800">Student Details</h1>
               <div className="flex space-x-2">
-                <button onClick={() => router.push(`/students/edit/${id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Edit</button>
+                <button onClick={() => router.push(`/students/edit/${id}`)} className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-md">Edit</button>
                 <button onClick={() => router.push('/students')} className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md">Back</button>
               </div>
             </div>
@@ -128,8 +147,9 @@ export default function StudentDetail() {
                         <td className="px-6 py-4">{loan.bookTitle}</td>
                         <td className="px-6 py-4 text-sm text-gray-500">{loan.borrowDate}</td>
                         <td className="px-6 py-4 text-sm text-gray-500">{loan.dueDate}</td>
-                        <td className="px-6 py-4">{loan.status}</td>
+                        <td className="px-6 py-4"><LoanStatusBadge status={loan.status} /></td>
                         <td className="px-6 py-4">
+                          <button className="text-green-700 mr-3" onClick={() => handleExtend(loan.id)}>Renew</button>
                           <button className="text-green-700" onClick={() => handleReturn(loan.id)}>Return</button>
                         </td>
                       </tr>

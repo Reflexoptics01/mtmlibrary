@@ -108,6 +108,38 @@ export async function getSettings(): Promise<Settings> {
   };
 }
 
+export async function updateSettings(settings: Partial<Settings>) {
+  const payload: Record<string, unknown> = {};
+  if (settings.libraryName !== undefined) {
+    const name = settings.libraryName.trim();
+    if (!name) throw new Error('Library name cannot be empty');
+    payload.library_name = name;
+  }
+  if (settings.maxBooksPerStudent !== undefined) {
+    if (settings.maxBooksPerStudent < 1) throw new Error('Max books per student must be at least 1');
+    payload.max_books_per_student = settings.maxBooksPerStudent;
+  }
+  if (settings.maxBorrowDays !== undefined) {
+    if (settings.maxBorrowDays < 1) throw new Error('Max borrow days must be at least 1');
+    payload.max_borrow_days = settings.maxBorrowDays;
+  }
+  if (settings.finePerDay !== undefined) {
+    if (settings.finePerDay < 0) throw new Error('Fine per day cannot be negative');
+    payload.fine_per_day = settings.finePerDay;
+  }
+  if (settings.lostBookFine !== undefined) {
+    if (settings.lostBookFine < 0) throw new Error('Lost book fine cannot be negative');
+    payload.lost_book_fine = settings.lostBookFine;
+  }
+  if (settings.currencySymbol !== undefined) {
+    const symbol = settings.currencySymbol.trim();
+    if (!symbol) throw new Error('Currency symbol cannot be empty');
+    payload.currency_symbol = symbol;
+  }
+  const { error } = await getSupabase().from('settings').update(payload).eq('id', 1);
+  throwIfError(error);
+}
+
 export async function getAllBooks(): Promise<Book[]> {
   const { data, error } = await getSupabase().from('books').select('*').order('title');
   throwIfError(error);
@@ -276,6 +308,15 @@ export async function markBookLost(borrowingId: string): Promise<number> {
   const { data, error } = await getSupabase().rpc('mark_book_lost', { p_borrowing_id: borrowingId });
   throwIfError(error);
   return Number(data ?? 0);
+}
+
+export async function extendBorrowing(borrowingId: string, days: number): Promise<string> {
+  const { data, error } = await getSupabase().rpc('extend_borrowing', {
+    p_borrowing_id: borrowingId,
+    p_days: days,
+  });
+  throwIfError(error);
+  return String(data ?? '');
 }
 
 export async function payStudentFine(studentId: string, amount: number): Promise<number> {

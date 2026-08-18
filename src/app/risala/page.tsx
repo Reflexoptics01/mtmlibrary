@@ -107,7 +107,7 @@ function PublicationsInner() {
                   </div>
                   <div className="mt-auto flex flex-wrap gap-2">
                     {item.bookletUrl && <a href={item.bookletUrl} target="_blank" rel="noreferrer" className="btn-primary text-sm">Download</a>}
-                    {item.audioUrl && <a href={item.audioUrl} target="_blank" rel="noreferrer" className="rounded-md bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">Listen</a>}
+                    {item.audioUrl && <a href={item.audioUrl} target="_blank" rel="noreferrer" className="rounded-md bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-800">Listen</a>}
                     {isStaff && (
                       <button onClick={() => handleDelete(item.id)} className="rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700">Delete</button>
                     )}

@@ -69,7 +69,7 @@ export default function StaffPage() {
                       <button className="text-green-700" onClick={() => handleRole(profile.id, 'librarian')}>Make librarian</button>
                     )}
                     {profile.role !== 'admin' && (
-                      <button className="text-blue-700" onClick={() => handleRole(profile.id, 'admin')}>Make admin</button>
+                      <button className="text-green-800" onClick={() => handleRole(profile.id, 'admin')}>Make admin</button>
                     )}
                     {profile.role !== 'pending' && (
                       <button className="text-amber-700" onClick={() => handleRole(profile.id, 'pending')}>Set pending</button>
